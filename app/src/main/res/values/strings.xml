@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Feriferi</string>
+    <string name="title_activity_item_description">ItemDescriptionActivity</string>
+    <string name="title_activity_seller_page">SellerPageActivity</string>
 </resources>

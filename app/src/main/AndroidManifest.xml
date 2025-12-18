@@ -12,6 +12,28 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Feriferi">
         <activity
+            android:name=".SellerPageActivity"
+            android:exported="true"
+            android:label="@string/title_activity_seller_page"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ItemDescriptionActivity"
+            android:exported="true"
+            android:label="@string/title_activity_item_description"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
