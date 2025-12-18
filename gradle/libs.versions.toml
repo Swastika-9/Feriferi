@@ -38,7 +38,7 @@ firebase-auth = { module = "com.google.firebase:firebase-auth-ktx" }
 firebase-database = { module = "com.google.firebase:firebase-database-ktx" }
 
 [plugins]
-android-application = { id = "com.android.application", version = "8.9.1" }
+android-application = { id = "com.android.application", version = "8.13.2" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version = "2.0.21" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version = "2.0.21" }
 google-services = { id = "com.google.gms.google-services", version = "4.4.2" }

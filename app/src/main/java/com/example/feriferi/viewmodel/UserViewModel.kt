@@ -1,16 +1,29 @@
 package com.example.feriferi.viewmodel
 
-import androidx.lifecycle.ViewModel
 import com.example.feriferi.model.UserModel
 import com.example.feriferi.repository.UserRepo
 
-class UserViewModel(private val userRepo: UserRepo) : ViewModel() {
+class UserViewModel(private val repo: UserRepo) {
 
-    fun register(email: String, password: String, callback: (Boolean, String, String) -> Unit) {
-        userRepo.register(email, password, callback)
-    }
-
-    fun addUserToDatabase(userId: String, user: UserModel, callback: (Boolean, String) -> Unit) {
-        userRepo.addUserToDatabase(userId, user, callback)
+    fun registerUser(
+        email: String,
+        password: String,
+        user: UserModel,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        repo.register(email, password) { success, message, userId ->
+            if (success) {
+                repo.addUserToDatabase(userId, user) { dbSuccess, dbMessage ->
+                    if (dbSuccess) {
+                        onSuccess()
+                    } else {
+                        onFailure(dbMessage)
+                    }
+                }
+            } else {
+                onFailure(message)
+            }
+        }
     }
 }

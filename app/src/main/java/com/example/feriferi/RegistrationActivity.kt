@@ -160,22 +160,61 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Role Buttons
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Button(
-                    onClick = { selectedRole = "Buyer" },
-                    colors = ButtonDefaults.buttonColors(containerColor = ButtonColor),
-                    modifier = Modifier.weight(1f)
+            // Role Selection
+            Text(
+                text = "Choose your role",
+                color = TextBrown,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(top = 10.dp)
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(TextFieldColor, RoundedCornerShape(10.dp))
+                    .padding(8.dp)
+            ) {
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { selectedRole = "Buyer" }
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Sign up as buyer", color = WhiteText)
+                    RadioButton(
+                        selected = selectedRole == "Buyer",
+                        onClick = { selectedRole = "Buyer" },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = ButtonColor,
+                            unselectedColor = TextBrown
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Sign up as Buyer", color = TextBrown)
                 }
-                Spacer(modifier = Modifier.width(10.dp))
-                Button(
-                    onClick = { selectedRole = "Seller" },
-                    colors = ButtonDefaults.buttonColors(containerColor = ButtonColor),
-                    modifier = Modifier.weight(1f)
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { selectedRole = "Seller" }
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Sign up as seller", color = WhiteText)
+                    RadioButton(
+                        selected = selectedRole == "Seller",
+                        onClick = { selectedRole = "Seller" },
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = ButtonColor,
+                            unselectedColor = TextBrown
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Sign up as Seller", color = TextBrown)
                 }
             }
 
@@ -189,11 +228,66 @@ fun RegisterScreen() {
             Button(
                 onClick = { /* Google login */ },
                 colors = ButtonDefaults.buttonColors(containerColor = ButtonColor),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(10.dp)
             ) {
-                Icon(painterResource(R.drawable.google), contentDescription = null)
-                Spacer(modifier = Modifier.width(10.dp))
-                Text("Sign up with Google", color = WhiteText)
+                Icon(
+                    painter = painterResource(R.drawable.google),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp), // 👈 controls icon size
+                    tint = Color.Unspecified // 👈 keeps original Google colors
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Sign up with Google",
+                    color = WhiteText,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Button(
+                onClick = {
+
+                    if (
+                        fullName.isBlank() ||
+                        email.isBlank() ||
+                        password.isBlank() ||
+                        selectedRole.isBlank()
+                    ) {
+                        Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    val user = UserModel(
+                        fullName = fullName,
+                        email = email,
+                        role = selectedRole
+                    )
+
+                    userViewModel.registerUser(
+                        email = email,
+                        user = user,
+                        password = password,
+                        onSuccess = {
+                            Toast.makeText(context, "Account created successfully", Toast.LENGTH_SHORT).show()
+                            activity.finish()
+                        },
+                        onFailure = { error ->
+                            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = ButtonColor),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text("Create Account", color = WhiteText)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
