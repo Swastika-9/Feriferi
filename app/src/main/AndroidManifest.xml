@@ -11,33 +11,26 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Feriferi">
+
+        <!-- Launcher Activity -->
         <activity
-            android:name=".SellerDashboard"
+            android:name=".SellerDashboardActivity"
             android:exported="true"
             android:label="@string/title_activity_seller_dashboard"
             android:theme="@style/Theme.Feriferi">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".MainActivity2"
-            android:exported="false"
-            android:label="@string/title_activity_main2"
-            android:theme="@style/Theme.Feriferi" />
+
+        <!-- Other activities -->
         <activity
             android:name=".MainActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Feriferi">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            android:theme="@style/Theme.Feriferi" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
     </application>
 
 </manifest>
