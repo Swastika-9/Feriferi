@@ -12,6 +12,61 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Feriferi">
         <activity
+            android:name=".NotificationActivity"
+            android:exported="true"
+            android:label="@string/title_activity_notification"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="true"
+            android:label="@string/title_activity_profile"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ItemDescriptionActivity"
+            android:exported="true"
+            android:label="@string/title_activity_item_description"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".CategoryActivity"
+            android:exported="true"
+            android:label="@string/title_activity_category"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".DashboardActivity"
+            android:exported="true"
+            android:label="@string/title_activity_dashboard"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".SettingsActivity"
             android:exported="true"
             android:label="@string/title_activity_settings"
@@ -22,7 +77,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".RegistrationActivity"
             android:exported="true"

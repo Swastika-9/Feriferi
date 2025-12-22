@@ -15,3 +15,5 @@ val TextFieldColor = Color(0xFFFDEDDC)   // text field background
 val ButtonColor = Color(0xFF6B4F4B)      // dark brown buttons
 val TextBrown = Color(0xFF6B4F4B)        // brown text
 val WhiteText = Color(0xFFFFFFFF)        // white text for buttons
+
+val DarkPink = Color(0xFFD2076A)
