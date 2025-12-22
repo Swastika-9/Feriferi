@@ -1,4 +1,14 @@
 <resources>
     <string name="app_name">Feriferi</string>
+<<<<<<< HEAD
     <string name="title_activity_login">LoginActivity</string>
+=======
+    <string name="title_activity_registration">RegistrationActivity</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_dashboard">DashboardActivity</string>
+    <string name="title_activity_category">CategoryActivity</string>
+    <string name="title_activity_item_description">ItemDescriptionActivity</string>
+    <string name="title_activity_profile">ProfileActivity</string>
+    <string name="title_activity_notification">NotificationActivity</string>
+>>>>>>> swastika
 </resources>

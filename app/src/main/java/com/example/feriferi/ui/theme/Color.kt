@@ -11,7 +11,17 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
+<<<<<<< HEAD
 
 val PrimaryDarkBrown = Color(0xFF5D4037)
 
 val GoogleBlue = Color(0xFF4285F4)
+=======
+val BackgroundColor = Color(0xFFFFF6EB)  // screen background
+val TextFieldColor = Color(0xFFFDEDDC)   // text field background
+val ButtonColor = Color(0xFF6B4F4B)      // dark brown buttons
+val TextBrown = Color(0xFF6B4F4B)        // brown text
+val WhiteText = Color(0xFFFFFFFF)        // white text for buttons
+
+val DarkPink = Color(0xFFD2076A)
+>>>>>>> swastika
