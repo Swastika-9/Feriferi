@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,37 +14,36 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.lazy.items
 
-/* ---------- COLORS ---------- */
 private val SoftPink = Color(0xFFFFF1F4)
-private val SoftCardPink = Color(0xFFFFE9EE)
-private val SoftInputPink = Color(0xFFFFFAFA)
-
-/* ---------- ACTIVITY ---------- */
+private val CardPink = Color(0xFFFFE9EE)
+private val OffWhiteCard = Color(0xFFFFFAFA)
 
 class DashboardActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { DashboardBody() }
+        enableEdgeToEdge()
+        setContent {
+            DashboardBody()
+        }
     }
 }
-
-/* ---------- MAIN ---------- */
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,48 +54,45 @@ fun DashboardBody() {
     val scope = rememberCoroutineScope()
     var selectedBottomItem by remember { mutableIntStateOf(0) }
 
-    val bottomItems = listOf(
-        NavItem("Home", R.drawable.baseline_home_24),
-        NavItem("Cart", R.drawable.baseline_shopping_cart_24),
-        NavItem("Messages", R.drawable.baseline_message_24),
-        NavItem("Settings", R.drawable.baseline_settings_24)
-    )
-
     val categories = listOf(
-        "Clothing", "Foot-Wear", "Accessories",
-        "Furniture", "Electronics", "Books & Stationary"
+        "Clothing", "Footwear", "Accessories",
+        "Furniture", "Electronics", "Books & Stationery"
     )
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet(
-                modifier = Modifier.background(SoftPink)
-            ) {
-                Spacer(Modifier.height(24.dp))
-                Text(
-                    "Categories",
-                    fontWeight = FontWeight.Bold,
+            ModalDrawerSheet {
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentWidth(Alignment.CenterHorizontally)
-                        .padding(16.dp)
-                )
-                categories.forEach { category ->
+                        .fillMaxSize()
+                        .background(SoftPink)
+                ) {
+                    Spacer(Modifier.height(24.dp))
                     Text(
-                        text = category,
+                        text = "Categories",
+                        fontWeight = FontWeight.Bold,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .wrapContentWidth(Alignment.CenterHorizontally)
-                            .clickable {
-                                context.startActivity(
-                                    Intent(context, CategoryActivity::class.java)
-                                        .putExtra("category", category)
-                                )
-                                scope.launch { drawerState.close() }
-                            }
-                            .padding(12.dp)
+                            .padding(16.dp),
+                        textAlign = TextAlign.Center
                     )
+
+                    categories.forEach { category ->
+                        Text(
+                            text = category,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    context.startActivity(
+                                        Intent(context, CategoryActivity::class.java)
+                                            .putExtra("category", category)
+                                    )
+                                    scope.launch { drawerState.close() }
+                                }
+                                .padding(16.dp)
+                        )
+                    }
                 }
             }
         }
@@ -103,6 +100,7 @@ fun DashboardBody() {
 
         Scaffold(
             containerColor = SoftPink,
+
             topBar = {
                 CenterAlignedTopAppBar(
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -119,34 +117,42 @@ fun DashboardBody() {
                         }
                     },
                     actions = {
-                        IconButton(onClick = {
-                            context.startActivity(
-                                Intent(context, NotificationActivity::class.java)
-                            )
-                        }) {
+                        IconButton(onClick = { selectedBottomItem = 4 }) {
                             Icon(
-                                painter = painterResource(R.drawable.baseline_notifications_24),
+                                painter = painterResource(id = R.drawable.baseline_notifications_24),
                                 contentDescription = "Notifications"
                             )
                         }
                     }
                 )
             },
+
             bottomBar = {
                 NavigationBar(containerColor = SoftPink) {
-                    bottomItems.forEachIndexed { index, item ->
-                        NavigationBarItem(
-                            selected = selectedBottomItem == index,
-                            onClick = { selectedBottomItem = index },
-                            icon = {
-                                Icon(
-                                    painter = painterResource(item.icon),
-                                    contentDescription = item.label
-                                )
-                            },
-                            label = { Text(item.label) }
-                        )
-                    }
+                    NavigationBarItem(
+                        selected = selectedBottomItem == 0,
+                        onClick = { selectedBottomItem = 0 },
+                        icon = { Icon(painterResource(id = R.drawable.baseline_home_24), null) },
+                        label = { Text("Home") }
+                    )
+                    NavigationBarItem(
+                        selected = selectedBottomItem == 1,
+                        onClick = { selectedBottomItem = 1 },
+                        icon = { Icon(painterResource(id = R.drawable.baseline_shopping_cart_24), null) },
+                        label = { Text("Cart") }
+                    )
+                    NavigationBarItem(
+                        selected = selectedBottomItem == 2,
+                        onClick = { selectedBottomItem = 2 },
+                        icon = { Icon(painterResource(id = R.drawable.baseline_message_24), null) },
+                        label = { Text("Messages") }
+                    )
+                    NavigationBarItem(
+                        selected = selectedBottomItem == 3,
+                        onClick = { selectedBottomItem = 3 },
+                        icon = { Icon(painterResource(id = R.drawable.baseline_settings_24), null) },
+                        label = { Text("Settings") }
+                    )
                 }
             }
         ) { padding ->
@@ -155,27 +161,25 @@ fun DashboardBody() {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .background(SoftPink)
+                    .background(Brush.verticalGradient(listOf(SoftPink, SoftPink)))
             ) {
                 when (selectedBottomItem) {
                     0 -> HomeScreen()
-                    1 -> CenterText("Cart Screen")
-                    2 -> CenterText("Messages Screen")
-                    3 -> CenterText("Settings Screen")
+                    1 -> CartScreen()
+                    2 -> MessageScreen()
+                    3 -> SettingsScreen()      // ✅ FROM SettingsScreen.kt
+                    4 -> NotificationScreen()
                 }
             }
         }
     }
 }
 
-
 @Composable
 fun HomeScreen() {
 
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(SoftPink),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
@@ -184,16 +188,15 @@ fun HomeScreen() {
                 value = "",
                 onValueChange = {},
                 leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "Search")
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_search_24),
+                        contentDescription = "Search"
+                    )
                 },
-                placeholder = { Text("Search") },
+                placeholder = { Text("Search products") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = SoftInputPink,
-                    focusedContainerColor = SoftInputPink
-                )
+                    .padding(12.dp)
             )
         }
 
@@ -203,13 +206,15 @@ fun HomeScreen() {
             Text(
                 "Shop by choice",
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 12.dp)
+                modifier = Modifier.padding(start = 12.dp)
             )
         }
 
         item { HomeProductsSection() }
     }
 }
+
+/* ---------------- BANNERS ---------------- */
 @Composable
 fun BannerSection() {
 
@@ -219,36 +224,28 @@ fun BannerSection() {
         R.drawable.banner3
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(SoftPink)
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(items = banners) { banner ->
-                Card(
-                    modifier = Modifier
-                        .width(320.dp)
-                        .height(160.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = SoftCardPink
-                    ),
-                    elevation = CardDefaults.cardElevation(4.dp)
-                ) {
-                    Image(
-                        painter = painterResource(banner),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+        items(banners) { banner ->
+            Card(
+                colors = CardDefaults.cardColors(containerColor = CardPink),
+                modifier = Modifier
+                    .width(320.dp)
+                    .height(160.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = banner),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
     }
 }
 
+/* ---------------- PRODUCTS ---------------- */
 @Composable
 fun HomeProductsSection() {
 
@@ -265,28 +262,25 @@ fun HomeProductsSection() {
         columns = GridCells.Fixed(2),
         modifier = Modifier
             .height(650.dp)
-            .padding(12.dp)
-            .background(SoftPink),
+            .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+
         items(products) { product ->
             Card(
+                colors = CardDefaults.cardColors(containerColor = OffWhiteCard),
                 modifier = Modifier.clickable {
                     context.startActivity(
                         Intent(context, ItemDescriptionActivity::class.java)
                             .putExtra("productName", product.name)
                     )
-                },
-                colors = CardDefaults.cardColors(
-                    containerColor = SoftCardPink
-                ),
-                elevation = CardDefaults.cardElevation(4.dp)
+                }
             ) {
                 Column(Modifier.padding(8.dp)) {
 
                     Image(
-                        painter = painterResource(product.image),
+                        painter = painterResource(id = product.image),
                         contentDescription = null,
                         modifier = Modifier
                             .height(140.dp)
@@ -303,9 +297,7 @@ fun HomeProductsSection() {
                         Text(product.name, fontWeight = FontWeight.SemiBold)
                         IconButton(onClick = {}) {
                             Icon(
-                                painter = painterResource(
-                                    R.drawable.baseline_favorite_border_24
-                                ),
+                                painter = painterResource(id = R.drawable.baseline_favorite_border_24),
                                 contentDescription = "Love"
                             )
                         }
@@ -326,17 +318,30 @@ fun HomeProductsSection() {
     }
 }
 
+/* ---------------- OTHER SCREENS ---------------- */
 @Composable
-fun CenterText(text: String) {
+fun CartScreen() =
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text)
+        Text("Cart Screen")
     }
-}
 
+@Composable
+fun MessageScreen() =
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("Messages Screen")
+    }
 
-data class Product(val name: String, val username: String, val image: Int)
-data class NavItem(val label: String, val icon: Int)
+@Composable
+fun NotificationScreen() =
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("Notifications")
+    }
 
+data class Product(
+    val name: String,
+    val username: String,
+    val image: Int
+)
 
 @Preview(showBackground = true)
 @Composable

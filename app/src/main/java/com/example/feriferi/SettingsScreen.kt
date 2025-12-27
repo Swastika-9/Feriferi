@@ -39,29 +39,6 @@ fun SettingsScreen() {
             .background(Color(0xFFFDF8F3))
             .padding(16.dp)
     ) {
-
-        // ─────────── TOP BAR ───────────
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Text(
-                text = "फेरिPheri",
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.titleLarge
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Icon(Icons.Default.Notifications, contentDescription = "Notifications")
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
         // ─────────── SEARCH BAR ───────────
         OutlinedTextField(
             value = "",
@@ -215,8 +192,6 @@ fun LikedPostItem(post: LikedPost) {
         Text(text = post.title)
     }
 }
-
-/* ───────────────── PREVIEW ───────────────── */
 
 @Preview(showBackground = true)
 @Composable
