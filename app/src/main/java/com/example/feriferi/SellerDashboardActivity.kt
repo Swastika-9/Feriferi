@@ -1,6 +1,10 @@
 package com.example.feriferi
 
+import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -26,9 +30,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+class SellerDashboardActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            SellerDashboard()
+        }
+    }
+}
+
 data class SellerProduct(
-    val imageRes: Int,  // drawable resource ID
-    val name: String    // product name
+    val imageRes: Int,
+    val name: String
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,12 +62,13 @@ fun SellerDashboard() {
 
     Scaffold(
 
-        /* ---------------- TOP BAR ---------------- */
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("फेरीPheri", fontWeight = FontWeight.Bold, fontSize = 20.sp) },
+                title = {
+                    Text("फेरीPheri", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                },
                 navigationIcon = {
-                    IconButton(onClick = { /* TODO: open menu */ }) {
+                    IconButton(onClick = {}) {
                         Icon(Icons.Default.Menu, contentDescription = "Menu")
                     }
                 },
@@ -68,50 +83,75 @@ fun SellerDashboard() {
             )
         },
 
-        /* ---------------- BOTTOM BAR ---------------- */
         bottomBar = {
             NavigationBar {
-
                 NavigationBarItem(
                     selected = screenIndex == 0,
                     onClick = { screenIndex = 0 },
-                    icon = { Icon(painterResource(R.drawable.baseline_home_24), contentDescription = null) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(R.drawable.baseline_home_24),
+                            contentDescription = null
+                        )
+                    },
                     label = { Text("Home") }
                 )
 
                 NavigationBarItem(
                     selected = screenIndex == 1,
                     onClick = { screenIndex = 1 },
-                    icon = { Icon(painterResource(R.drawable.baseline_message_24), contentDescription = null) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(R.drawable.baseline_message_24),
+                            contentDescription = null
+                        )
+                    },
                     label = { Text("Messages") }
                 )
             }
         }
 
-    ) { paddingValues ->
+    ) { padding ->
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(padding)
         ) {
 
             when (screenIndex) {
-                0 -> SellerDashboardHome(products = products, onEditClick = { product ->
-                    Toast.makeText(context, "Edit ${product.name}", Toast.LENGTH_SHORT).show()
-                })
-                1 -> SellerMessageScreen()        // from separate file
-                2 -> SellerNotificationScreen()   // from separate file
+
+                0 -> SellerDashboardHome(
+                    products = products,
+                    onEditProduct = { product ->
+                        Toast.makeText(
+                            context,
+                            "Edit ${product.name}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    },
+                    onEditProfile = {
+                        screenIndex = 3
+                    }
+                )
+
+                1 -> SellerMessageScreen()
+
+                2 -> SellerNotificationScreen()
+
+                3 -> EditProfileScreen(
+                    onBack = { screenIndex = 0 }
+                )
             }
         }
     }
 }
 
-/* ---------------- DASHBOARD HOME ---------------- */
 @Composable
 fun SellerDashboardHome(
     products: List<SellerProduct>,
-    onEditClick: (SellerProduct) -> Unit
+    onEditProduct: (SellerProduct) -> Unit,
+    onEditProfile: () -> Unit
 ) {
 
     Column(
@@ -120,7 +160,6 @@ fun SellerDashboardHome(
             .padding(16.dp)
     ) {
 
-        /* Seller Info */
         Text("Vivienne Shirley", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
         Text("@vivienne", color = Color.Gray)
         Text("Since 2021")
@@ -128,30 +167,40 @@ fun SellerDashboardHome(
 
         Spacer(Modifier.height(20.dp))
 
-        /* Profile Picture */
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
             Image(
                 painter = painterResource(R.drawable.profilepic),
-                contentDescription = "Profile Picture",
-                modifier = Modifier.size(140.dp).clip(CircleShape)
+                contentDescription = "Profile",
+                modifier = Modifier
+                    .size(140.dp)
+                    .clip(CircleShape)
             )
         }
 
         Spacer(Modifier.height(20.dp))
 
-        /* Buttons: Edit profile / Add product */
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            OutlinedButton(onClick = {}, border = BorderStroke(1.dp, Color.Black)) {
-                Icon(Icons.Default.Edit, contentDescription = "Edit Profile")
+
+            OutlinedButton(
+                onClick = onEditProfile,
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Icon(Icons.Default.Edit, contentDescription = null)
                 Spacer(Modifier.width(6.dp))
                 Text("Edit profile")
             }
 
-            OutlinedButton(onClick = {}, border = BorderStroke(1.dp, Color.Black)) {
-                Icon(Icons.Default.Add, contentDescription = "Add Product")
+            OutlinedButton(
+                onClick = {},
+                border = BorderStroke(1.dp, Color.Black)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
                 Spacer(Modifier.width(6.dp))
                 Text("Add product")
             }
@@ -159,35 +208,45 @@ fun SellerDashboardHome(
 
         Spacer(Modifier.height(28.dp))
 
-        /* Recently added products */
         Text("Recently added", fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(12.dp))
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             items(products) { product ->
 
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(120.dp)) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.width(120.dp)
+                ) {
 
                     Box {
-                        /* Product Image */
+
                         Image(
-                            painter = painterResource(id = product.imageRes),
+                            painter = painterResource(product.imageRes),
                             contentDescription = product.name,
-                            modifier = Modifier.size(120.dp).clickable { onEditClick(product) } // <-- use instance
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clickable { onEditProduct(product) }
                         )
 
-                        /* Edit Icon */
                         IconButton(
-                            onClick = { onEditClick(product) },  // <-- use instance
-                            modifier = Modifier.align(Alignment.TopEnd).size(24.dp)
+                            onClick = { onEditProduct(product) },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(24.dp)
                         ) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit Product", tint = Color.Black)
+                            Icon(Icons.Default.Edit, contentDescription = null)
                         }
                     }
 
                     Spacer(Modifier.height(6.dp))
 
-                    Text(product.name, fontSize = 14.sp, textAlign = TextAlign.Center, maxLines = 2)
+                    Text(
+                        product.name,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        maxLines = 2
+                    )
                 }
             }
         }
