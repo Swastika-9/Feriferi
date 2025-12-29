@@ -12,9 +12,53 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Feriferi">
         <activity
-            android:name=".GreenLinenShirtActivity"
+            android:name=".MessageActivity"
             android:exported="true"
-            android:label="@string/title_activity_green_linen_shirt"
+            android:label="@string/title_activity_message"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ProductManagmentActivity"
+            android:exported="true"
+            android:label="@string/title_activity_product_managment"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".UserManagement.kt"
+            android:exported="true"
+            android:label="@string/title_activity_user_management.kt"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".EditProfileActivity"
+            android:exported="true"
+            android:label="@string/title_activity_edit_profile"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ItemDescription3"
+            android:exported="true"
+            android:label="@string/title_activity_item_description3"
             android:theme="@style/Theme.Feriferi">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,6 +70,17 @@
             android:name=".ItemDescription3Activity"
             android:exported="true"
             android:label="@string/title_activity_item_description3"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".GreenLinenShirtActivity"
+            android:exported="true"
+            android:label="@string/title_activity_green_linen_shirt"
             android:theme="@style/Theme.Feriferi">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

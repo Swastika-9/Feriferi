@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickableQ
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.feriferi.ui.theme.FeriferiTheme
 
-// ✅ Custom Colors (add these if missing)
+// ✅ Custom Colors
 val PrimaryDarkBrown = Color(0xFF5D4037)
 val GoogleBlue = Color(0xFF4285F4)
 val LightTanBackground = Color(0xFFF5F0EB)
@@ -65,7 +65,7 @@ fun LoginPageUi() {
 
             Spacer(modifier = Modifier.height(64.dp))
 
-            // ✅ LOGO / TITLE
+            // LOGO
             Text(
                 text = "फेरिPheri",
                 fontSize = 40.sp,
@@ -75,7 +75,7 @@ fun LoginPageUi() {
                 modifier = Modifier.padding(bottom = 48.dp)
             )
 
-            // ✅ EMAIL
+            // EMAIL
             Text(
                 text = "Email",
                 modifier = Modifier.fillMaxWidth(),
@@ -93,7 +93,7 @@ fun LoginPageUi() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ✅ PASSWORD
+            // PASSWORD
             Text(
                 text = "Password",
                 modifier = Modifier.fillMaxWidth(),
@@ -110,7 +110,6 @@ fun LoginPageUi() {
                 visualTransformation = PasswordVisualTransformation()
             )
 
-            // ✅ FORGOT PASSWORD
             TextButton(
                 onClick = { },
                 modifier = Modifier.align(Alignment.End)
@@ -120,7 +119,6 @@ fun LoginPageUi() {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // ✅ LOGIN BUTTON
             Button(
                 onClick = { },
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryDarkBrown),
@@ -134,11 +132,10 @@ fun LoginPageUi() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(text = "OR", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("OR", fontWeight = FontWeight.Bold)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ✅ GOOGLE LOGIN
             OutlinedButton(
                 onClick = { },
                 shape = RoundedCornerShape(12.dp),
@@ -158,12 +155,11 @@ fun LoginPageUi() {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // ✅ SIGN UP
             Row(
                 modifier = Modifier.padding(bottom = 32.dp),
                 horizontalArrangement = Arrangement.Center
             ) {
-                Text("Don't have an Account? ", color = Color.Black)
+                Text("Don't have an Account? ")
                 Text(
                     text = "Sign Up",
                     color = Color.Blue,
@@ -175,7 +171,7 @@ fun LoginPageUi() {
     }
 }
 
-// ✅ CUSTOM TEXT FIELD
+// CUSTOM TEXT FIELD
 @Composable
 fun StyledTextField(
     value: String,
@@ -184,9 +180,9 @@ fun StyledTextField(
     leadingIcon: androidx.compose.ui.graphics.vector.ImageVector,
     modifier: Modifier = Modifier.fillMaxWidth(),
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    visualTransformation: androidx.compose.ui.text.input.VisualTransformation = androidx.compose.ui.text.input.VisualTransformation.None,
+    visualTransformation: androidx.compose.ui.text.input.VisualTransformation =
+        androidx.compose.ui.text.input.VisualTransformation.None,
 ) {
-
     BasicTextField(
         value = value,
         onValueChange = onValueChange,

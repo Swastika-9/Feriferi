@@ -6,4 +6,8 @@
     <string name="title_activity_item_description2">ItemDescription2Activity</string>
     <string name="title_activity_item_description3">ItemDescription3Activity</string>
     <string name="title_activity_green_linen_shirt">GreenLinenShirtActivity</string>
+    <string name="title_activity_edit_profile">EditProfileActivity</string>
+    <string name="title_activity_user_management.kt">UserManagement.kt</string>
+    <string name="title_activity_product_managment">ProductManagmentActivity</string>
+    <string name="title_activity_message">MessageActivity</string>
 </resources>

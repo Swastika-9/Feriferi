@@ -1,5 +1,6 @@
 package com.example.feriferi
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -7,25 +8,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.ui.graphics.vector.ImageVector
-
-
+import com.example.feriferi.R
 
 @Composable
 fun ItemDescriptionScreen() {
@@ -73,9 +69,9 @@ fun ItemDescriptionScreen() {
 
         /* ---------------- IMAGE ---------------- */
         Box {
-            AsyncImage(
-                model = "https://via.placeholder.com/600x800",
-                contentDescription = "Product",
+            Image(
+                painter = painterResource(id = R.drawable.cottonshirt), // replace with your drawable
+                contentDescription = "Product Image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -99,14 +95,13 @@ fun ItemDescriptionScreen() {
                 )
 
                 Icon(
-                    imageVector = Icons.Filled.Bookmark,
+                    imageVector = Icons.Default.Bookmark,
                     contentDescription = "Save",
                     modifier = Modifier
                         .size(28.dp)
                         .background(Color.White, CircleShape)
                         .padding(5.dp)
                 )
-
             }
         }
 
@@ -157,10 +152,9 @@ fun ItemDescriptionScreen() {
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(text = "Size", fontWeight = FontWeight.Medium)
-
             Spacer(modifier = Modifier.height(6.dp))
 
-            Row {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 sizes.forEach {
                     SizeChip(
                         text = it,
@@ -181,43 +175,53 @@ fun ItemDescriptionScreen() {
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            Row {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Chip("Category: Clothing", Color(0xFFFFC107))
-                Spacer(modifier = Modifier.width(8.dp))
                 Chip("Status: Available", Color(0xFFE91E63))
             }
         }
 
         Spacer(modifier = Modifier.weight(1f))
 
-        /* ---------------- OFFER PRICE ---------------- */
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        /* ---------------- OFFER PRICE & ADD TO CART ---------------- */
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Button(
+                    onClick = { },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D6D6D)),
+                    modifier = Modifier
+                        .height(48.dp)
+                        .weight(1f)
+                ) {
+                    Text("Offer your Price", fontSize = 16.sp)
+                }
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                Box(
+                    modifier = Modifier
+                        .height(48.dp)
+                        .width(80.dp)
+                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("585", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             Button(
                 onClick = { },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D6D6D)),
-                modifier = Modifier
-                    .height(48.dp)
-                    .weight(1f)
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8D6E63)),
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Offer your Price", fontSize = 14.sp)
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Box(
-                modifier = Modifier
-                    .height(48.dp)
-                    .width(80.dp)
-                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "585", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                Text("Add to Cart", fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Color.White)
             }
         }
     }
@@ -229,7 +233,6 @@ fun ItemDescriptionScreen() {
 fun SizeChip(text: String, selected: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .padding(end = 8.dp)
             .border(
                 1.dp,
                 if (selected) Color.Black else Color.Gray,
@@ -253,11 +256,11 @@ fun SizeChip(text: String, selected: Boolean, onClick: () -> Unit) {
 @Composable
 fun DetailRow(title: String, value: String) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = title, fontSize = 13.sp)
-        Text(text = value, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+        Text(title, fontSize = 13.sp)
+        Text(value, fontSize = 13.sp, fontWeight = FontWeight.Medium)
     }
 }
 

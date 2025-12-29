@@ -10,8 +10,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,28 +31,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.feriferi.R
 
-class ItemDescription2Activity : ComponentActivity() {
+class ItemDescription3Activity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            ItemDescription2Screen()
+            ItemDescription3Screen()
         }
     }
 }
 
 @Composable
-fun ItemDescription2Screen() {
+fun ItemDescription3Screen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF4EDE4))
     ) {
 
-        // Scrollable content
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 160.dp) // leave space for sticky bottom section
+                .padding(bottom = 160.dp)
         ) {
 
             /* ---------------- TOP BAR ---------------- */
@@ -84,7 +89,7 @@ fun ItemDescription2Screen() {
             /* ---------------- IMAGE ---------------- */
             Box {
                 Image(
-                    painter = painterResource(id = R.drawable.decochair),
+                    painter = painterResource(id = R.drawable.greenshirt),
                     contentDescription = "Product Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -130,12 +135,12 @@ fun ItemDescription2Screen() {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Deco Chair", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-                    Text("Rs 1575", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text("Green linen shirt", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+                    Text("Rs 1775", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
 
                 Text(
-                    text = "Original price: 20000",
+                    text = "Original price: 1900",
                     fontSize = 12.sp,
                     color = Color.Gray,
                     textDecoration = TextDecoration.LineThrough
@@ -143,31 +148,68 @@ fun ItemDescription2Screen() {
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                Text("@hooman", fontSize = 12.sp, color = Color.Gray)
+                Text("@lennox", fontSize = 12.sp, color = Color.Gray)
                 Text("200 products sold", fontSize = 12.sp, color = Color.Gray)
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text("Product Details", fontWeight = FontWeight.Medium)
-
                 Spacer(modifier = Modifier.height(6.dp))
 
-                // ---- DETAILS ----
-                DetailItem("Color", "Soft Blue")
-                DetailItem("Condition", "4.5/5")
-                DetailItem("Bill", "Available")
+                // -------- INLINE DETAILS --------
+                Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
+                    Text("Color", fontSize = 13.sp)
+                    Text("Green", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                }
+
+                Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
+                    Text("Condition", fontSize = 13.sp)
+                    Text("4.5/5", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                }
+
+                Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
+                    Text("Tag", fontSize = 13.sp)
+                    Text("Available", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                }
+
+                Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
+                    Text("Number of times worn", fontSize = 13.sp)
+                    Text("2", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                }
+
+                Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
+                    Text("Company", fontSize = 13.sp)
+                    Text("zara", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
+                // -------- INLINE CHIPS --------
                 Row {
-                    InfoChip("Category: Furniture", Color(0xFFFFC107))
+                    Text(
+                        text = "Category: Clothes",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .background(Color(0xFFFFC107), RoundedCornerShape(12.dp))
+                            .padding(horizontal = 12.dp, vertical = 5.dp)
+                    )
+
                     Spacer(modifier = Modifier.width(8.dp))
-                    InfoChip("Status: Available", Color(0xFFE91E63))
+
+                    Text(
+                        text = "Status: Available",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .background(Color(0xFFE91E63), RoundedCornerShape(12.dp))
+                            .padding(horizontal = 12.dp, vertical = 5.dp)
+                    )
                 }
             }
         }
 
-        /* ---------------- STICKY BOTTOM SECTION ---------------- */
+        /* ---------------- STICKY BOTTOM ---------------- */
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -177,13 +219,12 @@ fun ItemDescription2Screen() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
-            // Offer your Price row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Button(
-                    onClick = { /* Offer Price */ },
+                    onClick = { },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D6D6D)),
                     modifier = Modifier
                         .height(48.dp)
@@ -206,9 +247,8 @@ fun ItemDescription2Screen() {
                 }
             }
 
-            // Add to Cart button
             Button(
-                onClick = { /* Add to Cart */ },
+                onClick = { },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8D6E63)),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -226,33 +266,8 @@ fun ItemDescription2Screen() {
     }
 }
 
-/* ---------------- INLINE DETAIL ITEM ---------------- */
-@Composable
-fun DetailItem(title: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(title, fontSize = 13.sp)
-        Text(value, fontSize = 13.sp, fontWeight = FontWeight.Medium)
-    }
-}
-
-/* ---------------- INFO CHIP ---------------- */
-@Composable
-fun InfoChip(text: String, color: Color) {
-    Text(
-        text = text,
-        color = Color.White,
-        fontSize = 12.sp,
-        modifier = Modifier
-            .background(color, RoundedCornerShape(12.dp))
-            .padding(horizontal = 12.dp, vertical = 5.dp)
-    )
-}
-
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun PreviewItemDescription2() {
-    ItemDescription2Screen()
+fun PreviewItemDescription3() {
+    ItemDescription3Screen()
 }

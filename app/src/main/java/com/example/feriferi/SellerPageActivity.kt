@@ -3,7 +3,7 @@ package com.example.feriferi
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,10 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 
 class SellerPageActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,7 +47,6 @@ fun SellerPageScreen() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // Search bar with icon
             OutlinedTextField(
                 value = "",
                 onValueChange = {},
@@ -63,14 +63,13 @@ fun SellerPageScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Profile image
-            Icon(
-                imageVector = Icons.Default.Person,
+            /* ---------- SELLER PROFILE IMAGE ---------- */
+            Image(
+                painter = painterResource(id = R.drawable.vivienne),
                 contentDescription = "Seller Profile",
                 modifier = Modifier
                     .size(120.dp)
-                    .clip(CircleShape),
-                tint = Color(0xFF8D6E63)
+                    .clip(CircleShape)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -111,9 +110,16 @@ fun SellerPageScreen() {
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            /* ---------- PRODUCT IMAGES ---------- */
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                ProductIcon("Beach Sandals")
-                ProductIcon("Halter Floral Sundress")
+                ProductItem(
+                    title = "Beach Sandals",
+                    imageRes = R.drawable.beachsandal
+                )
+                ProductItem(
+                    title = "Halter Floral Sundress",
+                    imageRes = R.drawable.halterfloral
+                )
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -148,7 +154,7 @@ fun SellerTopBar() {
             )
         },
         navigationIcon = {
-            IconButton(onClick = { /* back/home */ }) {
+            IconButton(onClick = {}) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back"
@@ -156,7 +162,7 @@ fun SellerTopBar() {
             }
         },
         actions = {
-            TextButton(onClick = { /* report user */ }) {
+            TextButton(onClick = {}) {
                 Text(
                     text = "Report user as scam",
                     fontSize = 12.sp,
@@ -183,21 +189,25 @@ fun SellerBottomBar() {
     }
 }
 
-/* ---------------- PRODUCT ---------------- */
+/* ---------------- PRODUCT ITEM ---------------- */
 
 @Composable
-fun ProductIcon(title: String) {
+fun ProductItem(
+    title: String,
+    imageRes: Int
+) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(
-            imageVector = Icons.Default.ShoppingBag,
+        Image(
+            painter = painterResource(id = imageRes),
             contentDescription = title,
-            modifier = Modifier.size(90.dp),
-            tint = Color(0xFF8D6E63)
+            modifier = Modifier.size(90.dp)
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(title, fontSize = 12.sp)
     }
 }
+
+/* ---------------- PREVIEW ---------------- */
 
 @Preview(showBackground = true)
 @Composable
