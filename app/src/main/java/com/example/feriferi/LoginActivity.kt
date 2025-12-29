@@ -1,233 +1,250 @@
 package com.example.feriferi
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickableQ
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.feriferi.ui.theme.FeriferiTheme
-
-// ✅ Custom Colors (add these if missing)
-val PrimaryDarkBrown = Color(0xFF5D4037)
-val GoogleBlue = Color(0xFF4285F4)
-val LightTanBackground = Color(0xFFF5F0EB)
+import com.example.feriferi.ui.theme.*
+import com.google.firebase.auth.FirebaseAuth
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
         setContent {
             FeriferiTheme {
-                LoginPageUi()
+                LoginScreen()
             }
         }
     }
 }
 
 @Composable
-fun LoginPageUi() {
+fun LoginScreen() {
+
+    val context = LocalContext.current
+    val isPreview = LocalInspectionMode.current
+
+    val activity = if (!isPreview) context as Activity else null
+    val auth = if (!isPreview) FirebaseAuth.getInstance() else null
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     Surface(
-        color = Color.White,
+        color = BackgroundColor,
         modifier = Modifier.fillMaxSize()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 32.dp),
+                .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Spacer(modifier = Modifier.height(64.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
-            // ✅ LOGO / TITLE
             Text(
-                text = "फेरिPheri",
-                fontSize = 40.sp,
-                fontWeight = FontWeight.Bold,
-                color = PrimaryDarkBrown,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 48.dp)
+                "फेरिPheri",
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 32.sp,
+                    color = TextBrown,
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier.fillMaxWidth()
             )
 
-            // ✅ EMAIL
-            Text(
-                text = "Email",
-                modifier = Modifier.fillMaxWidth(),
-                fontWeight = FontWeight.Medium,
-                color = Color.DarkGray
-            )
+            Spacer(modifier = Modifier.height(30.dp))
 
-            StyledTextField(
+            // Email
+            OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                label = "Email",
-                leadingIcon = Icons.Default.Email,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // ✅ PASSWORD
-            Text(
-                text = "Password",
+                placeholder = { Text("Email", color = TextBrown) },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_email_24),
+                        contentDescription = null,
+                        tint = TextBrown
+                    )
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth(),
-                fontWeight = FontWeight.Medium,
-                color = Color.DarkGray
+                shape = RoundedCornerShape(10.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = TextFieldColor,
+                    unfocusedContainerColor = TextFieldColor,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                )
             )
 
-            StyledTextField(
+            Spacer(modifier = Modifier.height(15.dp))
+
+            // Password
+            OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                label = "Password",
-                leadingIcon = Icons.Default.Lock,
+                placeholder = { Text("Password", color = TextBrown) },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_lock_24),
+                        contentDescription = null,
+                        tint = TextBrown
+                    )
+                },
+                visualTransformation = if (passwordVisible)
+                    VisualTransformation.None
+                else
+                    PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            painter = if (passwordVisible)
+                                painterResource(R.drawable.baseline_visibility_off_24)
+                            else
+                                painterResource(R.drawable.baseline_visibility_24),
+                            contentDescription = null,
+                            tint = TextBrown
+                        )
+                    }
+                },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                visualTransformation = PasswordVisualTransformation()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = TextFieldColor,
+                    unfocusedContainerColor = TextFieldColor,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                )
             )
 
-            // ✅ FORGOT PASSWORD
-            TextButton(
-                onClick = { },
-                modifier = Modifier.align(Alignment.End)
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Login Button
+            Button(
+                onClick = {
+                    if (isPreview) return@Button
+
+                    if (email.isBlank() || password.isBlank()) {
+                        Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    auth!!
+                        .signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
+                                activity!!.startActivity(
+                                    Intent(activity, DashboardActivity::class.java)
+                                )
+                                activity.finish()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Login failed: ${task.exception?.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = ButtonColor)
             ) {
-                Text("Forgot password?", color = PrimaryDarkBrown)
+                Text("Log in", color = WhiteText)
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // ✅ LOGIN BUTTON
+            Text("OR", color = TextBrown, fontWeight = FontWeight.SemiBold)
+
+            Spacer(modifier = Modifier.height(15.dp))
+
+            // Google Login (UI only)
             Button(
                 onClick = { },
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryDarkBrown),
-                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = ButtonColor),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(50.dp),
+                shape = RoundedCornerShape(10.dp)
             ) {
-                Text("Log in", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(text = "OR", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // ✅ GOOGLE LOGIN
-            OutlinedButton(
-                onClick = { },
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-            ) {
-                Text(
-                    text = "G",
-                    color = GoogleBlue,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(end = 8.dp)
+                Icon(
+                    painter = painterResource(R.drawable.google),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = Color.Unspecified
                 )
-                Text("Log in with Google")
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "Log in with Google",
+                    color = WhiteText,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // ✅ SIGN UP
+            // Sign up
             Row(
-                modifier = Modifier.padding(bottom = 32.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                Text("Don't have an Account? ", color = Color.Black)
+                Text("Don't have an account? ", color = TextBrown)
                 Text(
-                    text = "Sign Up",
-                    color = Color.Blue,
+                    "Sign Up",
+                    color = ButtonColor,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { }
+                    modifier = Modifier.clickable {
+                        if (!isPreview) {
+                            activity!!.startActivity(
+                                Intent(activity, RegistrationActivity::class.java)
+                            )
+                        }
+                    }
                 )
             }
         }
     }
 }
 
-// ✅ CUSTOM TEXT FIELD
-@Composable
-fun StyledTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector,
-    modifier: Modifier = Modifier.fillMaxWidth(),
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    visualTransformation: androidx.compose.ui.text.input.VisualTransformation = androidx.compose.ui.text.input.VisualTransformation.None,
-) {
-
-    BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        textStyle = LocalTextStyle.current.copy(color = Color.DarkGray, fontSize = 16.sp),
-        keyboardOptions = keyboardOptions,
-        visualTransformation = visualTransformation,
-        decorationBox = { innerTextField ->
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(LightTanBackground)
-                    .height(56.dp)
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = leadingIcon,
-                    contentDescription = label,
-                    tint = PrimaryDarkBrown,
-                    modifier = Modifier.size(24.dp)
-                )
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Box(
-                    modifier = Modifier.fillMaxHeight(),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    if (value.isEmpty()) {
-                        Text(text = label, color = Color.Gray)
-                    }
-                    innerTextField()
-                }
-            }
-        },
-        modifier = modifier
-    )
-}
-
 @Preview(showBackground = true)
 @Composable
-fun PreviewLoginPageUi() {
-    LoginPageUi()
+fun LoginPreview() {
+    FeriferiTheme {
+        LoginScreen()
+    }
 }

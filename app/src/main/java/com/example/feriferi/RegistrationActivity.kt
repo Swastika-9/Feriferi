@@ -1,6 +1,7 @@
 package com.example.feriferi
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -44,13 +45,16 @@ class RegistrationActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            RegisterScreen()
+            FeriferiTheme {
+                RegisterScreen()
+            }
         }
     }
 }
 
 @Composable
 fun RegisterScreen() {
+
     val userViewModel = remember { UserViewModel(UserRepoImpl()) }
 
     var fullName by remember { mutableStateOf("") }
@@ -60,7 +64,7 @@ fun RegisterScreen() {
     var selectedRole by remember { mutableStateOf("") }
 
     val context = LocalContext.current
-    val activity = context as Activity
+    val activity = context as? Activity
 
     Scaffold { padding ->
         Column(
@@ -128,7 +132,6 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            // Password
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -136,7 +139,8 @@ fun RegisterScreen() {
                 leadingIcon = {
                     Icon(Icons.Filled.Lock, contentDescription = null, tint = TextBrown)
                 },
-                visualTransformation = if (visibility) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (visibility)
+                    VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { visibility = !visibility }) {
                         Icon(
@@ -165,9 +169,7 @@ fun RegisterScreen() {
                 text = "Choose your role",
                 color = TextBrown,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(top = 10.dp)
+                modifier = Modifier.align(Alignment.Start)
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -178,7 +180,6 @@ fun RegisterScreen() {
                     .background(TextFieldColor, RoundedCornerShape(10.dp))
                     .padding(8.dp)
             ) {
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -220,44 +221,9 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            Text("OR", color = TextBrown, fontWeight = FontWeight.SemiBold)
-
-            Spacer(modifier = Modifier.height(15.dp))
-
-            // Google Sign Up
-            Button(
-                onClick = { /* Google login */ },
-                colors = ButtonDefaults.buttonColors(containerColor = ButtonColor),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(10.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.google),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp), // 👈 controls icon size
-                    tint = Color.Unspecified // 👈 keeps original Google colors
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Sign up with Google",
-                    color = WhiteText,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-
             Button(
                 onClick = {
-
-                    if (
-                        fullName.isBlank() ||
-                        email.isBlank() ||
-                        password.isBlank() ||
-                        selectedRole.isBlank()
-                    ) {
+                    if (fullName.isBlank() || email.isBlank() || password.isBlank() || selectedRole.isBlank()) {
                         Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
@@ -274,7 +240,11 @@ fun RegisterScreen() {
                         password = password,
                         onSuccess = {
                             Toast.makeText(context, "Account created successfully", Toast.LENGTH_SHORT).show()
-                            activity.finish()
+
+                            activity?.startActivity(
+                                Intent(activity, LoginActivity::class.java)
+                            )
+                            activity?.finish()
                         },
                         onFailure = { error ->
                             Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
@@ -292,20 +262,25 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Login link
             Text(
                 buildAnnotatedString {
                     append("Already have an account? ")
-                    withStyle(style = SpanStyle(color = TextBrown)) { append("Log in") }
+                    withStyle(style = SpanStyle(color = TextBrown)) {
+                        append("Log in")
+                    }
                 },
-                modifier = Modifier.clickable { activity.finish() }
+                modifier = Modifier.clickable {
+                    activity?.finish()
+                }
             )
         }
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun RegisterPreview() {
-    RegisterScreen()
+    FeriferiTheme {
+        RegisterScreen()
+    }
 }
