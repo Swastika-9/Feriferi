@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Feriferi</string>
+    <string name="title_activity_favourite">FavouriteActivity</string>
+    <string name="title_activity_forgotpassword">ForgotpasswordActivity</string>
+    <string name="title_activity_payment">PaymentActivity</string>
+    <string name="title_activity_review_rating">ReviewRatingActivity</string>
 </resources>
