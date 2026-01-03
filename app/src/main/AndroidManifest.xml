@@ -9,8 +9,28 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Feriferi">
+        <activity
+            android:name=".AddToCartScreen"
+            android:exported="true"
+            android:label="@string/title_activity_add_to_cart_screen"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-        <!-- Main Login Activity -->
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".AddToCartActivity"
+            android:exported="true"
+            android:label="@string/title_activity_add_to_cart"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity> <!-- Main Login Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -18,17 +38,15 @@
             android:theme="@style/Theme.Feriferi">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- Seller Dashboard Activity (after login) -->
+        </activity> <!-- Seller Dashboard Activity (after login) -->
         <activity
             android:name=".SellerDashboard"
             android:exported="true"
             android:label="Seller Dashboard"
             android:theme="@style/Theme.Feriferi" />
-
     </application>
 
 </manifest>

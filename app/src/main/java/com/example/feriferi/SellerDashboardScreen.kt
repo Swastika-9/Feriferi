@@ -67,11 +67,7 @@ fun SellerDashboardScreen() {
                         products = products.filter { it.id != productId }.toMutableList()
                     }
                 )
-                "Messages" -> PlaceholderScreen("Messages Screen") { currentScreen = "Home" }
-                "Settings" -> PlaceholderScreen("Settings Screen") { currentScreen = "Home" }
-                "EditProfile" -> PlaceholderScreen("Edit Profile Screen") { currentScreen = "Home" }
-                "AddProduct" -> PlaceholderScreen("Add Product Screen") { currentScreen = "Home" }
-                "EditProduct" -> PlaceholderScreen("Edit Product Screen") { currentScreen = "Home" }
+
             }
         }
     }
@@ -180,9 +176,9 @@ fun PlaceholderScreen(title: String, onBack: () -> Unit) {
 }
 
 fun sampleProducts() = listOf(
-    Product("1", "Sandal", R.drawable.sandal),
-    Product("2", "Floral Dress", R.drawable.floral_dress),
-    Product("3", "Cotton Shirt", R.drawable.cotton_shirt),
+    Product("1", "Sandal", 1200.0,2000.0,"M", "Zara Flip Flop Sandal. Only One Time Wore for an hour","Red","Great, Like Brand New",1,"Zara", "Tag available","FootWear","Women", "Available",R.drawable.sandal),
+    Product("2", "Floral Dress", 2500.0, R.drawable.floral_dress),
+    Product("3", "Cotton Shirt", 2200.0 R.drawable.cotton_shirt),
     Product("4", "Shoes", R.drawable.shoes),
     Product("5", "Bag", R.drawable.bag),
     Product("6", "Watch", R.drawable.watch),
