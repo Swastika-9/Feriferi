@@ -12,6 +12,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Feriferi">
         <activity
+            android:name=".VehicleActivity"
+            android:exported="true"
+            android:label="@string/title_activity_vehicle"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".MessageActivity"
             android:exported="true"
             android:label="@string/title_activity_message"

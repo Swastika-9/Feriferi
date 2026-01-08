@@ -10,4 +10,5 @@
     <string name="title_activity_user_management.kt">UserManagement.kt</string>
     <string name="title_activity_product_managment">ProductManagmentActivity</string>
     <string name="title_activity_message">MessageActivity</string>
+    <string name="title_activity_vehicle">VehicleActivity</string>
 </resources>
