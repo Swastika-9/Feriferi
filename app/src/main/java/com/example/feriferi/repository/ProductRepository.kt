@@ -1,30 +1,42 @@
 package com.example.feriferi.repository
 
-class ProductRepository {
 
-    private val db = FirebaseFirestore.getInstance()
+import com.example.feriferi.model.ProductModel
 
+interface ProductRepo {
+
+    // ADD PRODUCT
     fun addProduct(
-        product: Product,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-        val doc = db.collection("products").document()
-        doc.set(product.copy(id = doc.id))
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener {
-                onError(it.message ?: "Failed to add product")
-            }
-    }
+        model: ProductModel,
+        callback: (success: Boolean, message: String) -> Unit
+    )
 
+    // UPDATE PRODUCT
     fun updateProduct(
+        model: ProductModel,
+        callback: (success: Boolean, message: String) -> Unit
+    )
+
+    // DELETE PRODUCT
+    fun deleteProduct(
         productId: String,
-        updatedData: Map<String, Any>,
-        onSuccess: () -> Unit
-    ) {
-        db.collection("products")
-            .document(productId)
-            .update(updatedData)
-            .addOnSuccessListener { onSuccess() }
-    }
+        callback: (success: Boolean, message: String) -> Unit
+    )
+
+    // GET PRODUCT BY ID
+    fun getProductById(
+        productId: String,
+        callback: (success: Boolean, message: String, product: ProductModel?) -> Unit
+    )
+
+    // GET ALL PRODUCTS
+    fun getAllProduct(
+        callback: (success: Boolean, message: String, products: List<ProductModel>?) -> Unit
+    )
+
+    // GET PRODUCTS BY CATEGORY
+    fun getProductByCategory(
+        categoryId: String,
+        callback: (success: Boolean, message: String, products: List<ProductModel>?) -> Unit
+    )
 }

@@ -9,17 +9,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Feriferi">
-        <activity
-            android:name=".AddToCartScreen"
-            android:exported="true"
-            android:label="@string/title_activity_add_to_cart_screen"
-            android:theme="@style/Theme.Feriferi">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+<!--        <activity-->
+<!--            android:name=".AddToCartScreen"-->
+<!--            android:exported="true"-->
+<!--            android:label="@string/title_activity_add_to_cart_screen"-->
+<!--            android:theme="@style/Theme.Feriferi">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
         <activity
             android:name=".AddToCartActivity"
             android:exported="true"
@@ -48,5 +48,11 @@
             android:label="Seller Dashboard"
             android:theme="@style/Theme.Feriferi" />
     </application>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+
 
 </manifest>

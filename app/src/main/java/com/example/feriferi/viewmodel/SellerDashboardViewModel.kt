@@ -2,7 +2,7 @@ package com.example.feriferi.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.feriferi.R
-import com.example.feriferi.model.Product
+import com.example.feriferi.model.ProductModel
 import com.example.feriferi.model.Seller
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,12 +24,27 @@ class SellerDashboardViewModel : ViewModel() {
 
     private val _products = MutableStateFlow(
         listOf(
-            Product("1", "Sandal", R.drawable.sandal),
-            Product("2", "Floral Dress", R.drawable.floral_dress),
-            Product("3", "Cotton Shirt", R.drawable.cotton_shirt)
+            ProductModel(
+                id = "1",
+                name = "Sandal",
+                price = 1200.0,
+                imageRes = R.drawable.sandal
+            ),
+            ProductModel(
+                id = "2",
+                name = "Floral Dress",
+                price = 2500.0,
+                imageRes = R.drawable.floral_dress
+            ),
+            ProductModel(
+                id = "3",
+                name = "Cotton Shirt",
+                price = 2200.0,
+                imageRes = R.drawable.cotton_shirt
+            )
         )
     )
-    val products: StateFlow<List<Product>> = _products
+    val products: StateFlow<List<ProductModel>> = _products
 
     fun onTabChange(tab: String) {
         _selectedTab.value = tab
