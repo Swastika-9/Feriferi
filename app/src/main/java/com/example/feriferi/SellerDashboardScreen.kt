@@ -17,11 +17,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.rememberAsyncImagePainter
 import com.example.feriferi.model.ProductModel
 import com.example.feriferi.model.Seller
-
-// Sealed class for safe screen navigation
+import coil.compose.rememberAsyncImagePainter
 sealed class SellerScreen {
     object Home : SellerScreen()
     object Messages : SellerScreen()
