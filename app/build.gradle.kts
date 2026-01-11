@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.feriferi"
-    compileSdk = 36   // ✅ FIXED (no fancy DSL)
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.feriferi"

@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Feriferi">
 
-        <!-- Only MainActivity is the launcher -->
+        <!-- Main launcher activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -27,7 +27,7 @@
         <activity
             android:name=".SellerDashboardActivity"
             android:exported="true"
-            android:label="@string/title_activity_seller_dashboard"
+            android:label="Seller Dashboard"
             android:theme="@style/Theme.Feriferi" />
 
         <activity

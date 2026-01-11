@@ -90,8 +90,6 @@ fun CategoryBody(category: String) {
     }
 }
 
-// ---------------- PRODUCT CARD ----------------
-
 @Composable
 fun CategoryProductCard(product: CategoryProduct) {
 
@@ -137,16 +135,12 @@ fun CategoryProductCard(product: CategoryProduct) {
     }
 }
 
-// ---------------- DATA MODELS ----------------
-
 data class CategoryProduct(
     val name: String,
     val username: String,
     val category: String,
     val image: Int
 )
-
-// ---------------- DUMMY DATA ----------------
 
 fun sampleCategoryProducts(): List<CategoryProduct> {
     return listOf(
