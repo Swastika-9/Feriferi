@@ -1,4 +1,4 @@
-//package com.example.feriferi.viewmodel
+package com.example.feriferi.viewmodel//package com.example.feriferi.viewmodel
 //
 //import androidx.compose.runtime.mutableStateListOf
 //import androidx.lifecycle.ViewModel

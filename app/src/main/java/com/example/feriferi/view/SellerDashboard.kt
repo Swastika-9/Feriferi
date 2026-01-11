@@ -1,14 +1,14 @@
-package com.example.feriferi
+package com.example.feriferi.view
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Icon
-import androidx.compose.ui.res.painterResource
-
+import androidx.compose.ui.Modifier
+import com.example.feriferi.SellerDashboardScreen
 
 class SellerDashboard : ComponentActivity() {
 
@@ -17,10 +17,15 @@ class SellerDashboard : ComponentActivity() {
         setContent {
             MaterialTheme {
                 Surface(
-                    modifier = androidx.compose.ui.Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SellerDashboardScreen()
+                    SellerDashboardScreen(
+                        onNavigateToAddProduct = {
+                            val intent = Intent(this, AddProductActivity::class.java)
+                            startActivity(intent)
+                        }
+                    )
                 }
             }
         }

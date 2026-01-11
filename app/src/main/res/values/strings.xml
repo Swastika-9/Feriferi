@@ -3,4 +3,6 @@
     <string name="title_activity_seller_dashboard_screen">SellerDashboardScreen</string>
     <string name="title_activity_add_to_cart">AddToCartActivity</string>
     <string name="title_activity_add_to_cart_screen">AddToCartScreen</string>
+    <string name="title_activity_add_product">AddProductActivity</string>
+    <string name="title_activity_add_product_screen">AddProductScreen</string>
 </resources>

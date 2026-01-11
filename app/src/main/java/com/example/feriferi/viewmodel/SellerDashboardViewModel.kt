@@ -28,19 +28,22 @@ class SellerDashboardViewModel : ViewModel() {
                 id = "1",
                 name = "Sandal",
                 price = 1200.0,
-                imageRes = R.drawable.sandal
+                imageUrls = emptyList(),
+                quantity = 5
             ),
             ProductModel(
                 id = "2",
                 name = "Floral Dress",
                 price = 2500.0,
-                imageRes = R.drawable.floral_dress
+                imageUrls = emptyList(),
+                quantity = 2
             ),
             ProductModel(
                 id = "3",
                 name = "Cotton Shirt",
                 price = 2200.0,
-                imageRes = R.drawable.cotton_shirt
+                imageUrls = emptyList(),
+                quantity = 0
             )
         )
     )

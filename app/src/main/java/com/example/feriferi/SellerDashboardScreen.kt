@@ -1,6 +1,7 @@
 package com.example.feriferi
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,10 +10,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -20,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.example.feriferi.model.ProductModel
 import com.example.feriferi.model.Seller
 import coil.compose.rememberAsyncImagePainter
+
 sealed class SellerScreen {
     object Home : SellerScreen()
     object Messages : SellerScreen()
@@ -29,7 +34,7 @@ sealed class SellerScreen {
 }
 
 @Composable
-fun SellerDashboardScreen() {
+fun SellerDashboardScreen(onNavigateToAddProduct: () -> Unit) {
     var currentScreen by remember { mutableStateOf<SellerScreen>(SellerScreen.Home) }
 
     val seller by remember { mutableStateOf(
@@ -65,14 +70,13 @@ fun SellerDashboardScreen() {
             }
         }
     ) { innerPadding ->
-        // The innerPadding ensures content is not covered by the NavigationBar
         Box(modifier = Modifier.padding(innerPadding)) {
             when (currentScreen) {
                 is SellerScreen.Home -> HomeContent(
                     seller = seller,
                     products = products,
                     onEditProfile = { /* TODO */ },
-                    onAddProduct = { currentScreen = SellerScreen.AddProduct },
+                    onAddProduct = onNavigateToAddProduct,
                     onEditProduct = { currentScreen = SellerScreen.EditProduct },
                     onDeleteProduct = { productId ->
                         products = products.filter { it.id != productId }.toMutableList()
@@ -104,7 +108,6 @@ fun HomeContent(
     ) {
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Profile Section
         Image(
             painter = if (seller.profileImageUrl != null)
                 rememberAsyncImagePainter(seller.profileImageUrl)
@@ -123,7 +126,6 @@ fun HomeContent(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Quick Actions
         Row(
             modifier = Modifier
                 .padding(horizontal = 20.dp)
@@ -148,7 +150,6 @@ fun HomeContent(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Product List Section
         Text(
             text = "Recently Added",
             fontSize = 20.sp,
@@ -206,10 +207,11 @@ fun ProductCard(
             modifier = Modifier.padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val imagePainter = if (product.imageUrl != null) {
-                rememberAsyncImagePainter(product.imageUrl)
+            // FIX: Use imageUrls list. If empty, show placeholder
+            val imagePainter = if (product.imageUrls.isNotEmpty()) {
+                rememberAsyncImagePainter(product.imageUrls[0])
             } else {
-                painterResource(product.imageRes ?: R.drawable.shoes)
+                painterResource(R.drawable.shoes)
             }
 
             Image(
@@ -217,19 +219,28 @@ fun ProductCard(
                 contentDescription = product.name,
                 modifier = Modifier
                     .size(110.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
             )
 
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = product.name,
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.Bold,
                 maxLines = 1
             )
             Text(
                 text = "Rs. ${product.price}",
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = Color.DarkGray
+            )
+
+            // Added Status Display (Available / Sold Out)
+            Text(
+                text = product.status,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (product.quantity > 0) Color(0xFF4CAF50) else Color.Red
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -265,17 +276,13 @@ fun PlaceholderScreen(title: String, onBack: () -> Unit) {
     }
 }
 
+// FIX: Updated sample data to match new ProductModel constructor
 fun sampleProducts() = listOf(
-    ProductModel(
-        id = "1",
-        name = "Sandal",
-        price = 1200.0,
-        imageRes = R.drawable.sandal
-    ),
-    ProductModel("2", "Floral Dress", 2500.0, imageRes = R.drawable.floral_dress),
-    ProductModel("3", "Cotton Shirt", 2200.0, imageRes = R.drawable.cotton_shirt),
-    ProductModel("4", "Shoes", 3000.0, imageRes = R.drawable.shoes),
-    ProductModel("5", "Bag", 1500.0, imageRes = R.drawable.bag),
-    ProductModel("6", "Watch", 5000.0, imageRes = R.drawable.watch),
-    ProductModel("7", "Hat", 800.0, imageRes = R.drawable.hat)
+    ProductModel(id = "1", name = "Sandal", price = 1200.0, imageUrls = emptyList(), quantity = 5),
+    ProductModel(id = "2", name = "Floral Dress", price = 2500.0, imageUrls = emptyList(), quantity = 2),
+    ProductModel(id = "3", name = "Cotton Shirt", price = 2200.0, imageUrls = emptyList(), quantity = 0), // Sold Out
+    ProductModel(id = "4", name = "Shoes", price = 3000.0, imageUrls = emptyList(), quantity = 10),
+    ProductModel(id = "5", name = "Bag", price = 1500.0, imageUrls = emptyList(), quantity = 1),
+    ProductModel(id = "6", name = "Watch", price = 5000.0, imageUrls = emptyList(), quantity = 4),
+    ProductModel(id = "7", name = "Hat", price = 800.0, imageUrls = emptyList(), quantity = 8)
 )
