@@ -1,13 +1,15 @@
 package com.example.feriferi
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -18,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,17 +28,15 @@ import com.example.feriferi.model.ProductModel
 import com.example.feriferi.model.Seller
 import coil.compose.rememberAsyncImagePainter
 
-sealed class SellerScreen {
-    object Home : SellerScreen()
-    object Messages : SellerScreen()
-    object Settings : SellerScreen()
-    object AddProduct : SellerScreen()
-    object EditProduct : SellerScreen()
-}
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SellerDashboardScreen(onNavigateToAddProduct: () -> Unit) {
-    var currentScreen by remember { mutableStateOf<SellerScreen>(SellerScreen.Home) }
+    // --- BRAND COLORS ---
+    val AdminBrown = Color(0xFF8D736B)
+    val AdminBgWhite = Color(0xFFFFFFFF)
+    val AdminGray = Color(0xFF757575)
+
+    var selectedTab by remember { mutableStateOf(0) } // 0: Home, 1: Messages, 2: Settings
 
     val seller by remember { mutableStateOf(
         Seller("Vivienne Shirley", "@vivienne", R.drawable.seller_profile, productsSold = 12)
@@ -44,48 +45,77 @@ fun SellerDashboardScreen(onNavigateToAddProduct: () -> Unit) {
     var products by remember { mutableStateOf(sampleProducts().toMutableList()) }
 
     Scaffold(
+        containerColor = AdminBgWhite,
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "फेरिPheri",
+                        style = TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Bold, color = AdminBrown)
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { /* Open Drawer */ }) {
+                        Icon(Icons.Default.Menu, null, tint = AdminBrown)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { /* Notifications */ }) {
+                        Icon(Icons.Default.NotificationsNone, null, tint = AdminBrown)
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = AdminBgWhite)
+            )
+        },
         bottomBar = {
             NavigationBar(
                 containerColor = Color.White,
-                tonalElevation = 8.dp
+                tonalElevation = 0.dp
             ) {
                 NavigationBarItem(
-                    selected = currentScreen is SellerScreen.Home,
-                    onClick = { currentScreen = SellerScreen.Home },
-                    icon = { Icon(painterResource(R.drawable.baseline_add_home_24), contentDescription = "Home") },
-                    label = { Text("Home") }
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+                    label = { Text("Home") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = AdminBrown,
+                        selectedTextColor = AdminBrown,
+                        indicatorColor = AdminBrown.copy(alpha = 0.1f)
+                    )
                 )
                 NavigationBarItem(
-                    selected = currentScreen is SellerScreen.Messages,
-                    onClick = { currentScreen = SellerScreen.Messages },
-                    icon = { Icon(painterResource(R.drawable.baseline_message_24), contentDescription = "Messages") },
-                    label = { Text("Messages") }
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
+                    icon = { Icon(Icons.Default.Email, contentDescription = "Messages") },
+                    label = { Text("Messages") },
+                    colors = NavigationBarItemDefaults.colors(selectedIconColor = AdminBrown, selectedTextColor = AdminBrown)
                 )
                 NavigationBarItem(
-                    selected = currentScreen is SellerScreen.Settings,
-                    onClick = { currentScreen = SellerScreen.Settings },
-                    icon = { Icon(painterResource(R.drawable.baseline_settings_24), contentDescription = "Settings") },
-                    label = { Text("Settings") }
+                    selected = selectedTab == 2,
+                    onClick = { selectedTab = 2 },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                    label = { Text("Settings") },
+                    colors = NavigationBarItemDefaults.colors(selectedIconColor = AdminBrown, selectedTextColor = AdminBrown)
                 )
             }
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            when (currentScreen) {
-                is SellerScreen.Home -> HomeContent(
+            when (selectedTab) {
+                0 -> HomeContent(
                     seller = seller,
                     products = products,
+                    adminBrown = AdminBrown,
+                    adminGray = AdminGray,
                     onEditProfile = { /* TODO */ },
                     onAddProduct = onNavigateToAddProduct,
-                    onEditProduct = { currentScreen = SellerScreen.EditProduct },
+                    onEditProduct = { /* TODO */ },
                     onDeleteProduct = { productId ->
                         products = products.filter { it.id != productId }.toMutableList()
                     }
                 )
-                is SellerScreen.Messages -> PlaceholderScreen("Messages") { currentScreen = SellerScreen.Home }
-                is SellerScreen.Settings -> PlaceholderScreen("Settings") { currentScreen = SellerScreen.Home }
-                is SellerScreen.AddProduct -> PlaceholderScreen("Add Product") { currentScreen = SellerScreen.Home }
-                is SellerScreen.EditProduct -> PlaceholderScreen("Edit Product") { currentScreen = SellerScreen.Home }
+                1 -> PlaceholderScreen("Messages", { selectedTab = 0 })
+                2 -> PlaceholderScreen("Settings", { selectedTab = 0 })
             }
         }
     }
@@ -95,6 +125,8 @@ fun SellerDashboardScreen(onNavigateToAddProduct: () -> Unit) {
 fun HomeContent(
     seller: Seller,
     products: List<ProductModel>,
+    adminBrown: Color,
+    adminGray: Color,
     onEditProfile: () -> Unit,
     onAddProduct: () -> Unit,
     onEditProduct: (String) -> Unit,
@@ -108,21 +140,25 @@ fun HomeContent(
     ) {
         Spacer(modifier = Modifier.height(24.dp))
 
-        Image(
-            painter = if (seller.profileImageUrl != null)
-                rememberAsyncImagePainter(seller.profileImageUrl)
-            else
-                painterResource(seller.profileImage),
-            contentDescription = "Profile Picture",
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-        )
+        // Profile Section
+        Box(contentAlignment = Alignment.BottomEnd) {
+            Image(
+                painter = if (seller.profileImageUrl != null)
+                    rememberAsyncImagePainter(seller.profileImageUrl)
+                else
+                    painterResource(seller.profileImage),
+                contentDescription = "Profile Picture",
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .border(2.dp, adminBrown, CircleShape)
+            )
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
         Text(seller.name, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        Text(seller.username, color = Color.Gray)
-        Text("Products sold: ${seller.productsSold}", color = Color.Gray)
+        Text(seller.username, color = adminGray)
+        Text("Products sold: ${seller.productsSold}", color = adminGray, fontSize = 14.sp)
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -135,16 +171,18 @@ fun HomeContent(
             Button(
                 onClick = onEditProfile,
                 modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = adminBrown)
             ) {
-                Text("Edit Profile")
+                Text("Edit Profile", color = Color.White)
             }
             Button(
                 onClick = onAddProduct,
                 modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = adminBrown)
             ) {
-                Text("Add Product")
+                Text("Add Product", color = Color.White)
             }
         }
 
@@ -175,6 +213,7 @@ fun HomeContent(
                     rowProducts.forEach { product ->
                         ProductCard(
                             product = product,
+                            accentColor = adminBrown,
                             onEdit = { onEditProduct(product.id) },
                             onDelete = { onDeleteProduct(product.id) },
                             modifier = Modifier.weight(1f)
@@ -193,6 +232,7 @@ fun HomeContent(
 @Composable
 fun ProductCard(
     product: ProductModel,
+    accentColor: Color,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
@@ -207,7 +247,6 @@ fun ProductCard(
             modifier = Modifier.padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // FIX: Use imageUrls list. If empty, show placeholder
             val imagePainter = if (product.imageUrls.isNotEmpty()) {
                 rememberAsyncImagePainter(product.imageUrls[0])
             } else {
@@ -224,18 +263,45 @@ fun ProductCard(
             )
 
             Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = product.name,
                 fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                fontSize = 16.sp
+            )
+
+            // RESTORED: Detailed Subtitle
+            Text(
+                text = "${product.category} | ${product.brand ?: "Generic"}",
+                fontSize = 11.sp,
+                color = Color.Gray,
                 maxLines = 1
             )
+
             Text(
                 text = "Rs. ${product.price}",
                 fontSize = 14.sp,
-                color = Color.DarkGray
+                fontWeight = FontWeight.SemiBold,
+                color = accentColor
             )
 
-            // Added Status Display (Available / Sold Out)
+            // RESTORED: Times Worn Tag
+            if (!product.tag.isNullOrEmpty()) {
+                Surface(
+                    color = Color(0xFFF5F5F5),
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier.padding(top = 2.dp)
+                ) {
+                    Text(
+                        text = "Worn: ${product.tag}",
+                        fontSize = 10.sp,
+                        color = Color.DarkGray,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                    )
+                }
+            }
+
             Text(
                 text = product.status,
                 fontSize = 12.sp,
@@ -271,18 +337,17 @@ fun PlaceholderScreen(title: String, onBack: () -> Unit) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(title, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onBack) { Text("Go Home") }
+            Button(onClick = onBack, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8D736B))) {
+                Text("Go Home")
+            }
         }
     }
 }
 
-// FIX: Updated sample data to match new ProductModel constructor
 fun sampleProducts() = listOf(
-    ProductModel(id = "1", name = "Sandal", price = 1200.0, imageUrls = emptyList(), quantity = 5),
-    ProductModel(id = "2", name = "Floral Dress", price = 2500.0, imageUrls = emptyList(), quantity = 2),
-    ProductModel(id = "3", name = "Cotton Shirt", price = 2200.0, imageUrls = emptyList(), quantity = 0), // Sold Out
-    ProductModel(id = "4", name = "Shoes", price = 3000.0, imageUrls = emptyList(), quantity = 10),
-    ProductModel(id = "5", name = "Bag", price = 1500.0, imageUrls = emptyList(), quantity = 1),
-    ProductModel(id = "6", name = "Watch", price = 5000.0, imageUrls = emptyList(), quantity = 4),
-    ProductModel(id = "7", name = "Hat", price = 800.0, imageUrls = emptyList(), quantity = 8)
+    ProductModel(id = "1", name = "Sandal", price = 1200.0, category = "Footwear", brand = "Local", tag = "2 times", quantity = 5),
+    ProductModel(id = "2", name = "Floral Dress", price = 2500.0, category = "Clothing", brand = "Zara", tag = "New", quantity = 2),
+    ProductModel(id = "3", name = "Cotton Shirt", price = 2200.0, category = "Clothing", brand = "H&M", tag = "5 times", quantity = 0),
+    ProductModel(id = "4", name = "Sports Shoes", price = 3000.0, category = "Footwear", brand = "Nike", tag = "10 times", quantity = 10),
+    ProductModel(id = "5", name = "Luxury Bag", price = 1500.0, category = "Accessories", brand = "Gucci", tag = "New", quantity = 1)
 )

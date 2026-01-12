@@ -5,4 +5,6 @@
     <string name="title_activity_add_to_cart_screen">AddToCartScreen</string>
     <string name="title_activity_add_product">AddProductActivity</string>
     <string name="title_activity_add_product_screen">AddProductScreen</string>
+    <string name="title_activity_admin_dashboard">AdminDashboardActivity</string>
+    <string name="title_activity_admin_dashboard_screen">AdminDashboardScreen</string>
 </resources>
