@@ -1,14 +1,10 @@
 <resources>
     <string name="app_name">Feriferi</string>
-    <string name="title_activity_item_description">ItemDescriptionActivity</string>
-    <string name="title_activity_seller_page">SellerPageActivity</string>
-    <string name="title_activity_login_acticity">LoginActicity</string>
-    <string name="title_activity_item_description2">ItemDescription2Activity</string>
-    <string name="title_activity_item_description3">ItemDescription3Activity</string>
-    <string name="title_activity_green_linen_shirt">GreenLinenShirtActivity</string>
-    <string name="title_activity_edit_profile">EditProfileActivity</string>
-    <string name="title_activity_user_management.kt">UserManagement.kt</string>
-    <string name="title_activity_product_managment">ProductManagmentActivity</string>
-    <string name="title_activity_message">MessageActivity</string>
-    <string name="title_activity_vehicle">VehicleActivity</string>
+    <string name="title_activity_seller_dashboard_screen">SellerDashboardScreen</string>
+    <string name="title_activity_add_to_cart">AddToCartActivity</string>
+    <string name="title_activity_add_to_cart_screen">AddToCartScreen</string>
+    <string name="title_activity_add_product">AddProductActivity</string>
+    <string name="title_activity_add_product_screen">AddProductScreen</string>
+    <string name="title_activity_admin_dashboard">AdminDashboardActivity</string>
+    <string name="title_activity_admin_dashboard_screen">AdminDashboardScreen</string>
 </resources>
