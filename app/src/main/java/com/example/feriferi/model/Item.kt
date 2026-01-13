@@ -1,18 +1,16 @@
 package com.example.feriferi.model
 
 data class Item(
-    val itemId: String = "",
-    val name: String = "",
-    val price: Int = 0,
-    val originalPrice: Int = 0,
-    val sellerName: String = "",
-    val soldCount: Int = 0,
-    val sizes: List<String> = emptyList(),
-    val color: String = "",
-    val condition: String = "",
-    val purchasedYear: Int = 0,
-    val brand: String = "",
-    val category: String = "",
-    val status: String = "",
-    val imageUrl: String = ""
+    var name: String = "",
+    var price: Int = 0,
+    var originalPrice: Int = 0,
+    var sellerName: String = "",
+    var soldCount: Int = 0,
+    var sizes: List<String> = emptyList(),
+    var color: String = "",
+    var condition: String = "",
+    var purchasedYear: Int = 0,
+    var brand: String = "",
+    var category: String = "",
+    var status: String = ""
 )

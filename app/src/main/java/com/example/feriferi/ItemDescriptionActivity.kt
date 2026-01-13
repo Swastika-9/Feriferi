@@ -1,8 +1,14 @@
 package com.example.feriferi
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import com.example.feriferi.model.Item
 import com.google.firebase.database.*
 
@@ -13,26 +19,59 @@ class ItemDescriptionActivity : ComponentActivity() {
 
         val itemId = intent.getStringExtra("itemId")
         if (itemId == null) {
+            Toast.makeText(this, "Item not found", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
 
-        val ref = FirebaseDatabase.getInstance()
-            .getReference("items")
-            .child(itemId)
+        setContent {
+            var item by remember { mutableStateOf<Item?>(null) }
+            var isLoading by remember { mutableStateOf(true) }
 
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val item = snapshot.getValue(Item::class.java)
+            LaunchedEffect(itemId) {
+                val ref = FirebaseDatabase.getInstance()
+                    .getReference("items")
+                    .child(itemId)
 
-                if (item != null) {
-                    setContent {
-                        ItemDescriptionScreen(item = item)
+                ref.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        item = snapshot.getValue(Item::class.java)
+                        isLoading = false
+
+                        if (item == null) {
+                            Toast.makeText(
+                                this@ItemDescriptionActivity,
+                                "Item not found in database",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            finish()
+                        }
                     }
-                }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        isLoading = false
+                        Toast.makeText(
+                            this@ItemDescriptionActivity,
+                            "Failed to load item",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        finish()
+                    }
+                })
             }
 
-            override fun onCancelled(error: DatabaseError) {}
-        })
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                item?.let {
+                    ItemDescriptionScreen(item = it)
+                }
+            }
+        }
     }
 }
