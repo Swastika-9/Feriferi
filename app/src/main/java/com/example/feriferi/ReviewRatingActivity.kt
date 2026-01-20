@@ -97,7 +97,7 @@ fun ReviewRatingsScreen() {
 
             LazyColumn {
                 items(products) {
-                    BannerSection()
+                    BannerSectionmain()
                     ReviewItem(it)
                     SectionTitle()
 
@@ -199,7 +199,7 @@ fun AppTopBar() {
 /* ---------------- BANNER ---------------- */
 
 @Composable
-fun BannerSection() {
+fun BannerSectionmain() {
     Card(
         modifier = Modifier
             .padding(16.dp)
