@@ -1,4 +1,4 @@
-package com.example.feriferi
+package com.example.feriferi.view
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue

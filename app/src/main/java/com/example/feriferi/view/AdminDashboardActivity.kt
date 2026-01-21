@@ -10,7 +10,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import com.example.feriferi.AdminDashboardScreen
 import com.example.feriferi.viewmodel.AdminDashboardViewModel
 
 class AdminDashboardActivity : ComponentActivity() {

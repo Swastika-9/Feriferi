@@ -1,4 +1,4 @@
-package com.example.feriferi
+package com.example.feriferi.view
 
 import android.app.Activity
 import android.content.Intent
@@ -35,6 +35,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.feriferi.R
 import com.example.feriferi.model.UserModel
 import com.example.feriferi.repository.UserRepoImpl
 import com.example.feriferi.ui.theme.*

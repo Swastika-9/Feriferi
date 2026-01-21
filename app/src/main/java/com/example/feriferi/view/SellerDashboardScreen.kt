@@ -1,4 +1,4 @@
-package com.example.feriferi
+package com.example.feriferi.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.example.feriferi.model.ProductModel
 import com.example.feriferi.model.Seller
 import coil.compose.rememberAsyncImagePainter
+import com.example.feriferi.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

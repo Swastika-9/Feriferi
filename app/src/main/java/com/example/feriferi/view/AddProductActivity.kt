@@ -13,7 +13,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import com.cloudinary.android.MediaManager
-import com.example.feriferi.AddProductScreen
 import com.example.feriferi.viewmodel.AddProductViewModel
 
 class AddProductActivity : ComponentActivity() {
