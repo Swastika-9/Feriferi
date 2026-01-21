@@ -7,4 +7,6 @@
     <string name="title_activity_add_product_screen">AddProductScreen</string>
     <string name="title_activity_admin_dashboard">AdminDashboardActivity</string>
     <string name="title_activity_admin_dashboard_screen">AdminDashboardScreen</string>
+    <string name="title_activity_chat_fairy">ChatFairyActivity</string>
+    <string name="title_activity_chat_fairy_screen">ChatFairyScreen</string>
 </resources>
