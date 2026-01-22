@@ -1,4 +1,4 @@
-package com.example.feriferi
+package com.example.feriferi.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -12,8 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,9 +22,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.feriferi.model.ProductModel
 import com.example.feriferi.model.Seller
 import coil.compose.rememberAsyncImagePainter
+import com.example.feriferi.R
+import com.example.feriferi.viewmodel.EditProductViewModel
+import com.example.feriferi.viewmodel.SellerProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,85 +39,112 @@ fun SellerDashboardScreen(onNavigateToAddProduct: () -> Unit) {
     val AdminGray = Color(0xFF757575)
 
     var selectedTab by remember { mutableStateOf(0) } // 0: Home, 1: Messages, 2: Settings
+    var showEditProfile by remember { mutableStateOf(false) }
+    var editingProduct by remember { mutableStateOf<ProductModel?>(null) }
 
-    val seller by remember { mutableStateOf(
-        Seller("Vivienne Shirley", "@vivienne", R.drawable.seller_profile, productsSold = 12)
-    ) }
+    val sellerProfileViewModel: SellerProfileViewModel = viewModel()
+    val editProductViewModel: EditProductViewModel = viewModel()
+
+    val seller by sellerProfileViewModel.seller.collectAsState()
 
     var products by remember { mutableStateOf(sampleProducts().toMutableList()) }
 
-    Scaffold(
-        containerColor = AdminBgWhite,
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "फेरिPheri",
-                        style = TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Bold, color = AdminBrown)
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { /* Open Drawer */ }) {
-                        Icon(Icons.Default.Menu, null, tint = AdminBrown)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* Notifications */ }) {
-                        Icon(Icons.Default.NotificationsNone, null, tint = AdminBrown)
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = AdminBgWhite)
-            )
-        },
-        bottomBar = {
-            NavigationBar(
-                containerColor = Color.White,
-                tonalElevation = 0.dp
-            ) {
-                NavigationBarItem(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home") },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = AdminBrown,
-                        selectedTextColor = AdminBrown,
-                        indicatorColor = AdminBrown.copy(alpha = 0.1f)
-                    )
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    icon = { Icon(Icons.Default.Email, contentDescription = "Messages") },
-                    label = { Text("Messages") },
-                    colors = NavigationBarItemDefaults.colors(selectedIconColor = AdminBrown, selectedTextColor = AdminBrown)
-                )
-                NavigationBarItem(
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("Settings") },
-                    colors = NavigationBarItemDefaults.colors(selectedIconColor = AdminBrown, selectedTextColor = AdminBrown)
-                )
-            }
+    if (showEditProfile) {
+        EditSellerProfileScreen(
+            viewModel = sellerProfileViewModel,
+            onBack = { showEditProfile = false }
+        )
+    } else if (editingProduct != null) {
+        // Initialize the ViewModel with the selected product
+        LaunchedEffect(editingProduct) {
+            editingProduct?.let { editProductViewModel.initializeProduct(it) }
         }
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            when (selectedTab) {
-                0 -> HomeContent(
-                    seller = seller,
-                    products = products,
-                    adminBrown = AdminBrown,
-                    adminGray = AdminGray,
-                    onEditProfile = { /* TODO */ },
-                    onAddProduct = onNavigateToAddProduct,
-                    onEditProduct = { /* TODO */ },
-                    onDeleteProduct = { productId ->
-                        products = products.filter { it.id != productId }.toMutableList()
-                    }
+
+        EditProductScreen(
+            viewModel = editProductViewModel,
+            onBack = {
+                // When coming back, we might want to update the local list with changes
+                val updatedProduct = editProductViewModel.productState
+                products = products.map { if (it.id == updatedProduct.id) updatedProduct else it }.toMutableList()
+                editingProduct = null
+            }
+        )
+    } else {
+        Scaffold(
+            containerColor = AdminBgWhite,
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = "फेरिPheri",
+                            style = TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Bold, color = AdminBrown)
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { /* Open Drawer */ }) {
+                            Icon(Icons.Default.Menu, null, tint = AdminBrown)
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { /* Notifications */ }) {
+                            Icon(Icons.Default.NotificationsNone, null, tint = AdminBrown)
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = AdminBgWhite)
                 )
-                1 -> PlaceholderScreen("Messages", { selectedTab = 0 })
-                2 -> PlaceholderScreen("Settings", { selectedTab = 0 })
+            },
+            bottomBar = {
+                NavigationBar(
+                    containerColor = Color.White,
+                    tonalElevation = 0.dp
+                ) {
+                    NavigationBarItem(
+                        selected = selectedTab == 0,
+                        onClick = { selectedTab = 0 },
+                        icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+                        label = { Text("Home") },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = AdminBrown,
+                            selectedTextColor = AdminBrown,
+                            indicatorColor = AdminBrown.copy(alpha = 0.1f)
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = selectedTab == 1,
+                        onClick = { selectedTab = 1 },
+                        icon = { Icon(Icons.Default.Email, contentDescription = "Messages") },
+                        label = { Text("Messages") },
+                        colors = NavigationBarItemDefaults.colors(selectedIconColor = AdminBrown, selectedTextColor = AdminBrown)
+                    )
+                    NavigationBarItem(
+                        selected = selectedTab == 2,
+                        onClick = { selectedTab = 2 },
+                        icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                        label = { Text("Settings") },
+                        colors = NavigationBarItemDefaults.colors(selectedIconColor = AdminBrown, selectedTextColor = AdminBrown)
+                    )
+                }
+            }
+        ) { innerPadding ->
+            Box(modifier = Modifier.padding(innerPadding)) {
+                when (selectedTab) {
+                    0 -> HomeContent(
+                        seller = seller,
+                        products = products,
+                        adminBrown = AdminBrown,
+                        adminGray = AdminGray,
+                        onEditProfile = { showEditProfile = true },
+                        onAddProduct = onNavigateToAddProduct,
+                        onEditProduct = { productId ->
+                            editingProduct = products.find { it.id == productId }
+                        },
+                        onDeleteProduct = { productId ->
+                            products = products.filter { it.id != productId }.toMutableList()
+                        }
+                    )
+                    1 -> PlaceholderScreen("Messages", { selectedTab = 0 })
+                    2 -> PlaceholderScreen("Settings", { selectedTab = 0 })
+                }
             }
         }
     }

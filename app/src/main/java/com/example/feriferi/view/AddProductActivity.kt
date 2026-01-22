@@ -13,7 +13,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import com.cloudinary.android.MediaManager
-import com.example.feriferi.AddProductScreen
 import com.example.feriferi.viewmodel.AddProductViewModel
 
 class AddProductActivity : ComponentActivity() {
@@ -23,13 +22,13 @@ class AddProductActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 1. INITIALIZE CLOUDINARY
+        // 1. CLOUDINARY INIT
         try {
             MediaManager.get()
         } catch (e: Exception) {
             val config = mapOf(
                 "cloud_name" to "dizcwwcat",
-                "api_key" to "934843177742589", // FIXED: Removed the \t\n characters
+                "api_key" to "934843177742589",
                 "api_secret" to "txri4GAHnxok5sBY0pB2gdiGMw4"
             )
             MediaManager.init(this, config)
@@ -39,7 +38,7 @@ class AddProductActivity : ComponentActivity() {
             val isUploading by viewModel.isUploading.observeAsState(initial = false)
             val statusMessage by viewModel.statusMessage.observeAsState(initial = "")
 
-            // 2. PERMISSION HANDLER (Handles Redmi/Android 13+ security)
+            // 2. PERMISSION HANDLER
             val permissionLauncher = rememberLauncherForActivityResult(
                 ActivityResultContracts.RequestMultiplePermissions()
             ) { permissions ->
@@ -49,7 +48,6 @@ class AddProductActivity : ComponentActivity() {
                 }
             }
 
-            // Trigger permissions request on screen launch
             LaunchedEffect(Unit) {
                 val permissionsNeeded = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     arrayOf(Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES)
@@ -59,11 +57,12 @@ class AddProductActivity : ComponentActivity() {
                 permissionLauncher.launch(permissionsNeeded)
             }
 
-            // 3. UI FEEDBACK (Toasts)
-            if (statusMessage.isNotBlank()) {
-                Toast.makeText(this@AddProductActivity, statusMessage, Toast.LENGTH_SHORT).show()
-                if (statusMessage == "Product Added Successfully!") {
-                    finish()
+            LaunchedEffect(statusMessage) {
+                if (statusMessage.isNotBlank()) {
+                    Toast.makeText(this@AddProductActivity, statusMessage, Toast.LENGTH_SHORT).show()
+                    if (statusMessage == "Product Added Successfully!") {
+                        finish()
+                    }
                 }
             }
 
@@ -71,7 +70,6 @@ class AddProductActivity : ComponentActivity() {
             AddProductScreen(
                 onBack = { finish() },
                 onUpload = { product, uris ->
-                    // Ensures sequential multi-upload logic is triggered
                     viewModel.uploadProductWithImages(product, uris)
                 },
                 isUploading = isUploading

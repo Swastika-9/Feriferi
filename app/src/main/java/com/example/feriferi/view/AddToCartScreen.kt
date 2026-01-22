@@ -1,4 +1,4 @@
-package com.example.feriferi//package com.example.feriferi
+package com.example.feriferi.view//package com.example.feriferi
 //
 //import android.widget.Toast
 //import androidx.compose.foundation.Image

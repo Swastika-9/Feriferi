@@ -1,4 +1,4 @@
-package com.example.feriferi
+package com.example.feriferi.view
 
 import android.content.Intent
 import android.os.Bundle
@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.items
+import com.example.feriferi.R
 
 private val SoftPink = Color(0xFFFFF1F4)
 private val CardPink = Color(0xFFFFE9EE)
