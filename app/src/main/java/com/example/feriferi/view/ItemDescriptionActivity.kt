@@ -35,7 +35,7 @@ fun ItemDescriptionScreen() {
             .background(Color(0xFFF4EDE4))
     ) {
 
-        /* ---------------- TOP BAR ---------------- */
+        /* ----- ----------- TOP BAR ---------------- */
         Box(
             modifier = Modifier
                 .fillMaxWidth()

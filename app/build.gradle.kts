@@ -19,10 +19,9 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-
     packaging {
         jniLibs {
-            useLegacyPackaging = false
+            useLegacyPackaging = true
         }
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -52,7 +51,6 @@ android {
     }
 }
 
-
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
     implementation(libs.androidx.core.ktx)
@@ -72,6 +70,10 @@ dependencies {
     implementation(libs.coil.compose)
     implementation("com.cloudinary:cloudinary-android:2.1.0")
     implementation("com.google.android.material:material:1.11.0")
+    
+    // Missing ViewModel Compose dependency
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -81,5 +83,4 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation("androidx.compose.runtime:runtime-livedata")
     implementation(libs.androidx.compose.material.icons.extended)
-
 }

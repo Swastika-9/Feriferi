@@ -9,4 +9,6 @@
     <string name="title_activity_admin_dashboard_screen">AdminDashboardScreen</string>
     <string name="title_activity_chat_fairy">ChatFairyActivity</string>
     <string name="title_activity_chat_fairy_screen">ChatFairyScreen</string>
+    <string name="title_activity_edit_seller_profile_screen">EditSellerProfileScreen</string>
+    <string name="title_activity_edit_product_screen">EditProductScreen</string>
 </resources>

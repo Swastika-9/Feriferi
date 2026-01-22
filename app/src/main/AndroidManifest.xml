@@ -18,6 +18,28 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Feriferi">
         <activity
+            android:name=".view.EditProductScreen"
+            android:exported="true"
+            android:label="@string/title_activity_edit_product_screen"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".view.EditSellerProfileScreen"
+            android:exported="true"
+            android:label="@string/title_activity_edit_seller_profile_screen"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".view.ChatFairyScreen"
             android:exported="true"
             android:label="@string/title_activity_chat_fairy_screen"

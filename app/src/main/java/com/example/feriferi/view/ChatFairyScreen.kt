@@ -24,9 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.feriferi.model.MessageModel
 import com.example.feriferi.viewmodel.ChatFairyViewModel
-import com.example.feriferi.ui.theme.FeriferiTheme // Assuming your theme is here
+import com.example.feriferi.ui.theme.FeriferiTheme
+import androidx.compose.foundation.clickable
 
-// Colors kept internal to match your specific Chat UI image
 val PheriBackground = Color(0xFF5C637A)
 val PheriHeaderBg = Color(0xFFF3E9DC)
 val PheriBotHeader = Color(0xFF535865)
@@ -36,9 +36,9 @@ val PheriYellow = Color(0xFFFFF100)
 @Composable
 fun ChatFairyScreen(
     viewModel: ChatFairyViewModel? = null,
-    userId: String = ""
+    userId: String = "",
+    onBackClick: () -> Unit = {}
 ) {
-    // Observe messages if viewModel exists, otherwise use empty list for preview
     val messages by viewModel?.messages?.collectAsState() ?: remember { mutableStateOf(emptyList<MessageModel>()) }
     var textState by remember { mutableStateOf("") }
 
@@ -49,7 +49,6 @@ fun ChatFairyScreen(
                 .padding(padding)
                 .background(PheriBackground)
         ) {
-            // 1. BRAND HEADER (फेरिPheri)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -68,7 +67,6 @@ fun ChatFairyScreen(
                 Icon(Icons.Default.NotificationsNone, contentDescription = null, tint = Color.Gray)
             }
 
-            // 2. BOT STATUS
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -80,17 +78,23 @@ fun ChatFairyScreen(
                     modifier = Modifier.weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Pheribot", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                    Text("ChatFairy", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(modifier = Modifier.size(10.dp).background(Color.Green, CircleShape))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text("Online Now", color = Color.Black, fontSize = 14.sp)
                     }
                 }
-                Icon(Icons.Default.Close, contentDescription = null, tint = Color.Black, modifier = Modifier.size(30.dp))
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = null,
+                    tint = Color.Black,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clickable { onBackClick() }
+                )
             }
 
-            // 3. CHAT AREA
             LazyColumn(
                 modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -101,7 +105,6 @@ fun ChatFairyScreen(
                 }
             }
 
-            // 4. INPUT FIELD
             Card(
                 modifier = Modifier.padding(20.dp).fillMaxWidth(),
                 shape = RoundedCornerShape(35.dp),
@@ -162,7 +165,6 @@ fun PheriBubbleItem(message: MessageModel) {
     }
 }
 
-// --- UPDATED PREVIEW TO MATCH YOUR STYLE ---
 @Preview(showBackground = true)
 @Composable
 fun ChatFairyPreview() {
