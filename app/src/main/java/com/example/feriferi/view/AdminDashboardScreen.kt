@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -148,7 +149,7 @@ fun AdminHomeContent(
 fun UserManagementList(users: List<UserAccount>, viewModel: AdminDashboardViewModel, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null) }
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) }
             Text("Manage Users", fontWeight = FontWeight.Bold, fontSize = 20.sp)
         }
         LazyColumn {
@@ -175,7 +176,7 @@ fun UserManagementList(users: List<UserAccount>, viewModel: AdminDashboardViewMo
 fun ProductManagementList(products: List<ProductModel>, viewModel: AdminDashboardViewModel, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, null) }
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) }
             Text("Manage Products", fontWeight = FontWeight.Bold, fontSize = 20.sp)
         }
         LazyColumn {

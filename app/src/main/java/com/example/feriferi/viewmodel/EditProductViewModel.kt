@@ -36,12 +36,10 @@ class EditProductViewModel : ViewModel() {
     }
 
     fun saveChanges(onSuccess: () -> Unit) {
-        // Here you would typically perform a Repository/Firebase update
         onSuccess()
     }
 
     fun saveProduct(onSuccess: (ProductModel) -> Unit) {
-        // Here you would typically perform a Repository/Firebase update
         onSuccess(productState)
     }
 }

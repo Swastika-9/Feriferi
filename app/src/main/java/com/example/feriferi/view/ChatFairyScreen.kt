@@ -26,6 +26,7 @@ import com.example.feriferi.model.MessageModel
 import com.example.feriferi.viewmodel.ChatFairyViewModel
 import com.example.feriferi.ui.theme.FeriferiTheme
 import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.automirrored.filled.Send
 
 val PheriBackground = Color(0xFF5C637A)
 val PheriHeaderBg = Color(0xFFF3E9DC)
@@ -135,7 +136,7 @@ fun ChatFairyScreen(
                             textState = ""
                         }
                     }) {
-                        Icon(Icons.Default.Send, contentDescription = null, tint = PheriBackground)
+                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, tint = PheriBackground)
                     }
                 }
             }
