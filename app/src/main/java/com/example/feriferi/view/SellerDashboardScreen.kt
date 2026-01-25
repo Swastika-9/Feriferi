@@ -1,125 +1,161 @@
 package com.example.feriferi.view
 
-import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.feriferi.R
-import com.example.feriferi.model.Product
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.feriferi.model.ProductModel
 import com.example.feriferi.model.Seller
+import coil.compose.rememberAsyncImagePainter
+import com.example.feriferi.R
+import com.example.feriferi.viewmodel.EditProductViewModel
+import com.example.feriferi.viewmodel.SellerProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SellerDashboard() {
+fun SellerDashboardScreen(onNavigateToAddProduct: () -> Unit) {
+    // --- BRAND COLORS ---
+    val AdminBrown = Color(0xFF8D736B)
+    val AdminBgWhite = Color(0xFFFFFFFF)
+    val AdminGray = Color(0xFF757575)
 
-    var screenIndex by remember { mutableIntStateOf(0) }
-    val context = LocalContext.current
+    var selectedTab by remember { mutableStateOf(0) } // 0: Home, 1: Messages, 2: Settings
+    var showEditProfile by remember { mutableStateOf(false) }
+    var editingProduct by remember { mutableStateOf<ProductModel?>(null) }
 
-    // Combine your products with more from your friend
-    var products by remember {
-        mutableStateOf(
-            listOf(
-                Product("1", "Sandal", R.drawable.sandal),
-                Product("2", "Floral Dress", R.drawable.floral_dress),
-                Product("3", "Cotton Shirt", R.drawable.cotton_shirt),
-                Product("4", "Shoes", R.drawable.shoes),
-                Product("5", "Bag", R.drawable.bag),
-                Product("6", "Watch", R.drawable.watch),
-                Product("7", "Hat", R.drawable.hat)
-            ).toMutableList()
+    val sellerProfileViewModel: SellerProfileViewModel = viewModel()
+    val editProductViewModel: EditProductViewModel = viewModel()
+
+    val seller by sellerProfileViewModel.seller.collectAsState()
+
+    var products by remember { mutableStateOf(sampleProducts().toMutableList()) }
+
+    if (showEditProfile) {
+        EditSellerProfileScreen(
+            viewModel = sellerProfileViewModel,
+            onBack = { showEditProfile = false }
         )
-    }
-
-    var seller by remember { mutableStateOf(
-        Seller("Vivienne Shirley", "@vivienne", R.drawable.seller_profile, productsSold = 12)
-    )}
-
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("फेरीPheri", fontWeight = FontWeight.Bold, fontSize = 20.sp) },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { screenIndex = 2 }) {
-                        Icon(painter = painterResource(R.drawable.baseline_notifications_24), contentDescription = "Notifications")
-                    }
-                }
-            )
-        },
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = screenIndex == 0,
-                    onClick = { screenIndex = 0 },
-                    icon = { Icon(painterResource(R.drawable.baseline_home_24), contentDescription = null) },
-                    label = { Text("Home") }
-                )
-                NavigationBarItem(
-                    selected = screenIndex == 1,
-                    onClick = { screenIndex = 1 },
-                    icon = { Icon(painterResource(R.drawable.baseline_message_24), contentDescription = null) },
-                    label = { Text("Messages") }
-                )
-            }
+    } else if (editingProduct != null) {
+        // Initialize the ViewModel with the selected product
+        LaunchedEffect(editingProduct) {
+            editingProduct?.let { editProductViewModel.initializeProduct(it) }
         }
-    ) { padding ->
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            when(screenIndex) {
-                0 -> SellerDashboardHome(
-                    seller = seller,
-                    products = products,
-                    onEditProfile = { screenIndex = 3 },
-                    onAddProduct = { /* add product logic */ },
-                    onEditProduct = { productId ->
-                        Toast.makeText(context, "Edit $productId", Toast.LENGTH_SHORT).show()
+        EditProductScreen(
+            viewModel = editProductViewModel,
+            onBack = {
+                // When coming back, we might want to update the local list with changes
+                val updatedProduct = editProductViewModel.productState
+                products = products.map { if (it.id == updatedProduct.id) updatedProduct else it }.toMutableList()
+                editingProduct = null
+            }
+        )
+    } else {
+        Scaffold(
+            containerColor = AdminBgWhite,
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = "फेरिPheri",
+                            style = TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Bold, color = AdminBrown)
+                        )
                     },
-                    onDeleteProduct = { productId ->
-                        products = products.filter { it.id != productId }.toMutableList()
-                        // Firebase delete logic can be added here
-                    }
+                    navigationIcon = {
+                        IconButton(onClick = { /* Open Drawer */ }) {
+                            Icon(Icons.Default.Menu, null, tint = AdminBrown)
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { /* Notifications */ }) {
+                            Icon(Icons.Default.NotificationsNone, null, tint = AdminBrown)
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = AdminBgWhite)
                 )
-                1 -> PlaceholderScreen("Messages Screen") { screenIndex = 0 }
-                2 -> PlaceholderScreen("Notifications Screen") { screenIndex = 0 }
-                3 -> PlaceholderScreen("Edit Profile Screen") { screenIndex = 0 }
+            },
+            bottomBar = {
+                NavigationBar(
+                    containerColor = Color.White,
+                    tonalElevation = 0.dp
+                ) {
+                    NavigationBarItem(
+                        selected = selectedTab == 0,
+                        onClick = { selectedTab = 0 },
+                        icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+                        label = { Text("Home") },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = AdminBrown,
+                            selectedTextColor = AdminBrown,
+                            indicatorColor = AdminBrown.copy(alpha = 0.1f)
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = selectedTab == 1,
+                        onClick = { selectedTab = 1 },
+                        icon = { Icon(Icons.Default.Email, contentDescription = "Messages") },
+                        label = { Text("Messages") },
+                        colors = NavigationBarItemDefaults.colors(selectedIconColor = AdminBrown, selectedTextColor = AdminBrown)
+                    )
+                    NavigationBarItem(
+                        selected = selectedTab == 2,
+                        onClick = { selectedTab = 2 },
+                        icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                        label = { Text("Settings") },
+                        colors = NavigationBarItemDefaults.colors(selectedIconColor = AdminBrown, selectedTextColor = AdminBrown)
+                    )
+                }
+            }
+        ) { innerPadding ->
+            Box(modifier = Modifier.padding(innerPadding)) {
+                when (selectedTab) {
+                    0 -> HomeContent(
+                        seller = seller,
+                        products = products,
+                        adminBrown = AdminBrown,
+                        adminGray = AdminGray,
+                        onEditProfile = { showEditProfile = true },
+                        onAddProduct = onNavigateToAddProduct,
+                        onEditProduct = { productId ->
+                            editingProduct = products.find { it.id == productId }
+                        },
+                        onDeleteProduct = { productId ->
+                            products = products.filter { it.id != productId }.toMutableList()
+                        }
+                    )
+                    1 -> PlaceholderScreen("Messages", { selectedTab = 0 })
+                    2 -> PlaceholderScreen("Settings", { selectedTab = 0 })
+                }
             }
         }
     }
 }
 
 @Composable
-fun SellerDashboardHome(
+fun HomeContent(
     seller: Seller,
-    products: List<Product>,
+    products: List<ProductModel>,
+    adminBrown: Color,
+    adminGray: Color,
     onEditProfile: () -> Unit,
     onAddProduct: () -> Unit,
     onEditProduct: (String) -> Unit,
@@ -128,85 +164,199 @@ fun SellerDashboardHome(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(seller.name, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
-        Text(seller.username, color = Color.Gray)
-        Text("Products sold: ${seller.productsSold}")
+        Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(Modifier.height(20.dp))
-
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
+        // Profile Section
+        Box(contentAlignment = Alignment.BottomEnd) {
             Image(
-                painter = painterResource(seller.profileImage),
-                contentDescription = "Profile",
+                painter = if (seller.profileImageUrl != null)
+                    rememberAsyncImagePainter(seller.profileImageUrl)
+                else
+                    painterResource(seller.profileImage),
+                contentDescription = "Profile Picture",
                 modifier = Modifier
-                    .size(140.dp)
+                    .size(120.dp)
                     .clip(CircleShape)
+                    .border(2.dp, adminBrown, CircleShape)
             )
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(seller.name, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(seller.username, color = adminGray)
+        Text("Products sold: ${seller.productsSold}", color = adminGray, fontSize = 14.sp)
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
-            OutlinedButton(onClick = onEditProfile, border = BorderStroke(1.dp, Color.Black)) {
-                Icon(Icons.Default.Edit, contentDescription = null)
-                Spacer(Modifier.width(6.dp))
-                Text("Edit profile")
+            Button(
+                onClick = onEditProfile,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = adminBrown)
+            ) {
+                Text("Edit Profile", color = Color.White)
             }
-
-            OutlinedButton(onClick = onAddProduct, border = BorderStroke(1.dp, Color.Black)) {
-                Icon(Icons.Default.Add, contentDescription = null)
-                Spacer(Modifier.width(6.dp))
-                Text("Add product")
+            Button(
+                onClick = onAddProduct,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = adminBrown)
+            ) {
+                Text("Add Product", color = Color.White)
             }
         }
 
-        Spacer(Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        Text("Recently added", fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(12.dp))
+        Text(
+            text = "Recently Added",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+        )
 
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            items(products) { product ->
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.width(120.dp)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            products.chunked(2).forEach { rowProducts ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Box {
-                        Image(
-                            painter = painterResource(product.image),
-                            contentDescription = product.name,
-                            modifier = Modifier
-                                .size(120.dp)
-                                .clickable { onEditProduct(product.id) }
+                    rowProducts.forEach { product ->
+                        ProductCard(
+                            product = product,
+                            accentColor = adminBrown,
+                            onEdit = { onEditProduct(product.id) },
+                            onDelete = { onDeleteProduct(product.id) },
+                            modifier = Modifier.weight(1f)
                         )
-
-                        Row(
-                            modifier = Modifier.align(Alignment.TopEnd)
-                        ) {
-                            IconButton(onClick = { onEditProduct(product.id) }, modifier = Modifier.size(24.dp)) {
-                                Icon(Icons.Default.Edit, contentDescription = null)
-                            }
-                            IconButton(onClick = { onDeleteProduct(product.id) }, modifier = Modifier.size(24.dp)) {
-                                Icon(Icons.Default.Add, contentDescription = "Delete") // Replace with delete icon if you have
-                            }
-                        }
                     }
-                    Spacer(Modifier.height(6.dp))
-                    Text(product.name, fontSize = 14.sp, textAlign = TextAlign.Center, maxLines = 2)
+                    if (rowProducts.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
             }
         }
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+}
 
-        Spacer(Modifier.height(60.dp))
+@Composable
+fun ProductCard(
+    product: ProductModel,
+    accentColor: Color,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            val imagePainter = if (product.imageUrls.isNotEmpty()) {
+                rememberAsyncImagePainter(product.imageUrls[0])
+            } else {
+                painterResource(R.drawable.shoes)
+            }
+
+            Image(
+                painter = imagePainter,
+                contentDescription = product.name,
+                modifier = Modifier
+                    .size(110.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = product.name,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                fontSize = 16.sp
+            )
+
+            // RESTORED: Detailed Subtitle
+            Text(
+                text = "${product.category} | ${product.brand ?: "Generic"}",
+                fontSize = 11.sp,
+                color = Color.Gray,
+                maxLines = 1
+            )
+
+            Text(
+                text = "Rs. ${product.price}",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = accentColor
+            )
+
+            // RESTORED: Times Worn Tag
+            if (!product.tag.isNullOrEmpty()) {
+                Surface(
+                    color = Color(0xFFF5F5F5),
+                    shape = RoundedCornerShape(4.dp),
+                    modifier = Modifier.padding(top = 2.dp)
+                ) {
+                    Text(
+                        text = "Worn: ${product.tag}",
+                        fontSize = 10.sp,
+                        color = Color.DarkGray,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                    )
+                }
+            }
+
+            Text(
+                text = product.status,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (product.quantity > 0) Color(0xFF4CAF50) else Color.Red
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Text(
+                    text = "Edit",
+                    color = Color(0xFF6A493A),
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { onEdit() }
+                )
+                Text(
+                    text = "Delete",
+                    color = Color.Red,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { onDelete() }
+                )
+            }
+        }
     }
 }
 
@@ -214,15 +364,19 @@ fun SellerDashboardHome(
 fun PlaceholderScreen(title: String, onBack: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(title, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(20.dp))
-            Button(onClick = onBack) { Text("Back") }
+            Text(title, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onBack, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8D736B))) {
+                Text("Go Home")
+            }
         }
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun SellerDashboardPreview() {
-    SellerDashboard()
-}
+fun sampleProducts() = listOf(
+    ProductModel(id = "1", name = "Sandal", price = 1200.0, category = "Footwear", brand = "Local", tag = "2 times", quantity = 5),
+    ProductModel(id = "2", name = "Floral Dress", price = 2500.0, category = "Clothing", brand = "Zara", tag = "New", quantity = 2),
+    ProductModel(id = "3", name = "Cotton Shirt", price = 2200.0, category = "Clothing", brand = "H&M", tag = "5 times", quantity = 0),
+    ProductModel(id = "4", name = "Sports Shoes", price = 3000.0, category = "Footwear", brand = "Nike", tag = "10 times", quantity = 10),
+    ProductModel(id = "5", name = "Luxury Bag", price = 1500.0, category = "Accessories", brand = "Gucci", tag = "New", quantity = 1)
+)

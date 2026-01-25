@@ -10,8 +10,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -55,7 +57,7 @@ class RegistrationActivity : ComponentActivity() {
 
 @Composable
 fun RegisterScreen() {
-
+    // Correct way to initialize ViewModel in Compose to survive re-compositions
     val userViewModel = remember { UserViewModel(UserRepoImpl()) }
 
     var fullName by remember { mutableStateOf("") }
@@ -73,7 +75,8 @@ fun RegisterScreen() {
                 .fillMaxSize()
                 .padding(padding)
                 .background(BackgroundColor)
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 20.dp)
+                .verticalScroll(rememberScrollState()), // Added scroll for smaller screens
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
@@ -102,11 +105,11 @@ fun RegisterScreen() {
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
-                colors = TextFieldDefaults.colors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = TextFieldColor,
                     unfocusedContainerColor = TextFieldColor,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent
                 )
             )
 
@@ -123,11 +126,11 @@ fun RegisterScreen() {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
-                colors = TextFieldDefaults.colors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = TextFieldColor,
                     unfocusedContainerColor = TextFieldColor,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent
                 )
             )
 
@@ -155,11 +158,11 @@ fun RegisterScreen() {
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
-                colors = TextFieldDefaults.colors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = TextFieldColor,
                     unfocusedContainerColor = TextFieldColor,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent
                 )
             )
 
@@ -241,10 +244,7 @@ fun RegisterScreen() {
                         password = password,
                         onSuccess = {
                             Toast.makeText(context, "Account created successfully", Toast.LENGTH_SHORT).show()
-
-                            activity?.startActivity(
-                                Intent(activity, LoginActivity::class.java)
-                            )
+                            activity?.startActivity(Intent(activity, LoginActivity::class.java))
                             activity?.finish()
                         },
                         onFailure = { error ->
@@ -266,14 +266,16 @@ fun RegisterScreen() {
             Text(
                 buildAnnotatedString {
                     append("Already have an account? ")
-                    withStyle(style = SpanStyle(color = TextBrown)) {
+                    withStyle(style = SpanStyle(color = TextBrown, fontWeight = FontWeight.Bold)) {
                         append("Log in")
                     }
                 },
                 modifier = Modifier.clickable {
+                    activity?.startActivity(Intent(activity, LoginActivity::class.java))
                     activity?.finish()
                 }
             )
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }

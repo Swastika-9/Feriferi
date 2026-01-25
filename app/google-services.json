@@ -1,13 +1,14 @@
 {
   "project_info": {
-    "project_number": "942110354518",
-    "project_id": "feriferi",
-    "storage_bucket": "feriferi.firebasestorage.app"
+    "project_number": "615508509670",
+    "firebase_url": "https://feriferi-5fa32-default-rtdb.firebaseio.com",
+    "project_id": "feriferi-5fa32",
+    "storage_bucket": "feriferi-5fa32.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:942110354518:android:5faec2b455ec27e7991ff7",
+        "mobilesdk_app_id": "1:615508509670:android:d1704f236d6e96bdd24c27",
         "android_client_info": {
           "package_name": "com.example.feriferi"
         }
@@ -15,7 +16,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBhR8epXoSCnVnvv9PW7PukexqNAcYXiTA"
+          "current_key": "AIzaSyCUnj7pik6EVr2a10iQe0LKLcnu_76hwPg"
         }
       ],
       "services": {

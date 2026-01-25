@@ -2,18 +2,65 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
     <application
         android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Feriferi">
+        <activity
+            android:name=".view.EditProductScreen"
+            android:exported="true"
+            android:label="@string/title_activity_edit_product_screen"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".view.EditSellerProfileScreen"
+            android:exported="true"
+            android:label="@string/title_activity_edit_seller_profile_screen"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-        <!-- Main launcher activity -->
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".view.ChatFairyScreen"
+            android:exported="true"
+            android:label="@string/title_activity_chat_fairy_screen"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".view.ChatFairyActivity"
+            android:exported="true"
+            android:label="@string/title_activity_chat_fairy"
+            android:theme="@style/Theme.Feriferi">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".view.MainActivity"
             android:exported="true"
@@ -21,64 +68,40 @@
             android:theme="@style/Theme.Feriferi">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".view.SellerDashboardActivity"
-            android:exported="true"
-            android:label="Seller Dashboard"
-            android:theme="@style/Theme.Feriferi" />
-
-        <activity
-            android:name=".view.NotificationActivity"
-            android:exported="true"
-            android:label="@string/title_activity_notification"
-            android:theme="@style/Theme.Feriferi" />
-
-        <activity
-            android:name=".view.ProfileActivity"
-            android:exported="true"
-            android:label="@string/title_activity_profile"
-            android:theme="@style/Theme.Feriferi" />
-
-        <activity
-            android:name=".view.ItemDescriptionActivity"
-            android:exported="true"
-            android:label="@string/title_activity_item_description"
-            android:theme="@style/Theme.Feriferi" />
-
-        <activity
-            android:name=".view.CategoryActivity"
-            android:exported="true"
-            android:label="@string/title_activity_category"
-            android:theme="@style/Theme.Feriferi" />
-
-        <activity
-            android:name=".view.DashboardActivity"
-            android:exported="true"
-            android:label="@string/title_activity_dashboard"
-            android:theme="@style/Theme.Feriferi" />
-
-        <activity
-            android:name=".view.SettingsActivity"
-            android:exported="true"
-            android:label="@string/title_activity_settings"
-            android:theme="@style/Theme.Feriferi" />
-
-        <activity
-            android:name=".view.RegistrationActivity"
-            android:exported="true"
-            android:label="@string/title_activity_registration"
-            android:theme="@style/Theme.Feriferi" />
-
         <activity
             android:name=".view.LoginActivity"
             android:exported="true"
             android:label="Login"
             android:theme="@style/Theme.Feriferi" />
-
+        <activity
+            android:name=".view.RegistrationActivity"
+            android:exported="false"
+            android:label="Register"
+            android:theme="@style/Theme.Feriferi" />
+        <activity
+            android:name=".view.AddProductActivity"
+            android:exported="true"
+            android:label="Add Product"
+            android:theme="@style/Theme.Feriferi" />
+        <activity
+            android:name=".AddToCartActivity"
+            android:exported="false"
+            android:label="My Cart"
+            android:theme="@style/Theme.Feriferi" />
+        <activity
+            android:name=".SellerDashboard"
+            android:exported="true"
+            android:label="Seller Dashboard"
+            android:theme="@style/Theme.Feriferi" />
+        <activity
+            android:name=".view.NotificationActivity"
+            android:exported="false"
+            android:label="Notifications"
+            android:theme="@style/Theme.Feriferi" />
     </application>
 
 </manifest>

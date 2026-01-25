@@ -1,36 +1,25 @@
-//package com.example.feriferi.view
-//
-//import android.os.Bundle
-//import android.view.View
-//import android.widget.FrameLayout
-//import androidx.appcompat.app.AppCompatActivity
-//import com.zegocloud.uikit.prebuilt.chat.ZegoUIKitPrebuiltChatFragment
-//
-//class SellerMessageScreen : AppCompatActivity() {
-//
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//
-//        val container = FrameLayout(this)
-//        container.id = View.generateViewId()
-//        setContentView(container)
-//
-//        val sellerId = "seller1"
-//        val sellerName = "Seller"
-//        val buyerId = "buyer1"
-//        val buyerName = "Buyer"
-//
-//        val fragment = ZegoUIKitPrebuiltChatFragment.newInstance(
-//            appID = 1144419921L,
-//            appSign = "50423a195e18a82ce2fb8aadabcadc5cfad4815ea9809ef57861800be296d9fc",
-//            userID = sellerId,
-//            userName = sellerName,
-//            peerUserID = buyerId,
-//            peerUserName = buyerName
-//        )
-//
-//        supportFragmentManager.beginTransaction()
-//            .replace(container.id, fragment)
-//            .commit()
-//    }
-//}
+package com.example.feriferi.view
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
+
+@Composable
+fun SellerMessageScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("No messages yet", fontSize = 18.sp)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SellerMessagePreview() {
+    SellerMessageScreen()
+}
