@@ -14,6 +14,7 @@ credentials = "1.5.0"
 credentialsPlayServicesAuth = "1.5.0"
 googleid = "1.1.1"
 firebaseDatabase = "22.0.1"
+zego = "2.8.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -37,6 +38,7 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version = "33.6.0"
 firebase-auth = { module = "com.google.firebase:firebase-auth-ktx" }
 firebase-database = { module = "com.google.firebase:firebase-database-ktx" }
 androidx-compose-material3-adaptive-navigation-suite = { group = "androidx.compose.material3", name = "material3-adaptive-navigation-suite" }
+zego-chat = { module = "com.zegocloud:uikit-prebuilt-chat", version.ref = "zego" }
 
 [plugins]
 android-application = { id = "com.android.application", version = "8.13.2" }

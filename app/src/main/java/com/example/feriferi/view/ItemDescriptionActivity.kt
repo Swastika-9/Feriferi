@@ -1,4 +1,4 @@
-package com.example.feriferi
+package com.example.feriferi.view
 
 import android.os.Bundle
 import android.widget.Toast
