@@ -20,6 +20,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Feriferi">
+        <activity
+            android:name=".view.DashboardActivity"
+            android:exported="true"/>
 
         <!-- ONLY ONE LAUNCHER -->
         <activity
