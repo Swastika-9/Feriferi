@@ -9,30 +9,31 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import android.app.Activity
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import android.app.Activity
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 
-class NewPasswordActivity : ComponentActivity() {
+class ForgotPasswordActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             MaterialTheme {
-                NewPasswordScreen { password, confirmPassword ->
-                    submitNewPassword(this, password, confirmPassword)
+                ForgotPasswordScreen { email ->
+                    resetPassword(this, email)
                 }
             }
         }
@@ -40,10 +41,9 @@ class NewPasswordActivity : ComponentActivity() {
 }
 
 @Composable
-fun NewPasswordScreen(onSubmitClick: (String, String) -> Unit) {
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    val context = androidx.compose.ui.platform.LocalContext.current
+fun ForgotPasswordScreen(onSendClick: (String) -> Unit) {
+    var email by remember { mutableStateOf(TextFieldValue("")) }
+    val context = LocalContext.current
     val activity = context as? Activity
 
     Box(
@@ -78,7 +78,7 @@ fun NewPasswordScreen(onSubmitClick: (String, String) -> Unit) {
 
             // Heading
             Text(
-                text = "New Password",
+                text = "Recover your account",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF1F2937),
@@ -87,48 +87,18 @@ fun NewPasswordScreen(onSubmitClick: (String, String) -> Unit) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // New Password Input Field
+            // Email Input Field
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                placeholder = { Text("Enter New Password", color = Color(0xFF6B7280)) },
+                value = email,
+                onValueChange = { email = it },
+                placeholder = { Text("Email", color = Color(0xFF6B7280)) },
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = "Password",
+                        imageVector = Icons.Default.Email,
+                        contentDescription = "Email",
                         tint = Color(0xFF78350F)
                     )
                 },
-                visualTransformation = PasswordVisualTransformation(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFD97706),
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedContainerColor = Color(0xFFFEF3E2),
-                    unfocusedContainerColor = Color(0xFFFEF3E2),
-                    focusedTextColor = Color(0xFF1F2937),
-                    unfocusedTextColor = Color(0xFF1F2937)
-                ),
-                shape = RoundedCornerShape(50),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Confirm Password Input Field
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                placeholder = { Text("Confirm Password", color = Color(0xFF6B7280)) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = "Confirm Password",
-                        tint = Color(0xFF78350F)
-                    )
-                },
-                visualTransformation = PasswordVisualTransformation(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFD97706),
                     unfocusedBorderColor = Color.Transparent,
@@ -145,10 +115,18 @@ fun NewPasswordScreen(onSubmitClick: (String, String) -> Unit) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Submit Button
+            // Send Reset Link Button
             Button(
                 onClick = {
-                    onSubmitClick(password, confirmPassword)
+                    if (email.text.isNotEmpty()) {
+                        onSendClick(email.text)
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Please enter your email",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -160,7 +138,7 @@ fun NewPasswordScreen(onSubmitClick: (String, String) -> Unit) {
                 )
             ) {
                 Text(
-                    text = "Send",
+                    text = "Send reset link",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -188,22 +166,22 @@ fun NewPasswordScreen(onSubmitClick: (String, String) -> Unit) {
     }
 }
 
-private fun submitNewPassword(context: Context, password: String, confirmPassword: String) {
-    if (password != confirmPassword) {
-        Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
-        return
-    }
-
+private fun resetPassword(context: Context, email: String) {
     val auth = FirebaseAuth.getInstance()
-    auth.currentUser?.updatePassword(password)
-        ?.addOnCompleteListener { task ->
+
+    auth.sendPasswordResetEmail(email)
+        .addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                Toast.makeText(context, "Password updated successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "Reset link sent to $email",
+                    Toast.LENGTH_LONG
+                ).show()
             } else {
                 Toast.makeText(
                     context,
-                    task.exception?.message ?: "Failed to update password",
-                    Toast.LENGTH_SHORT
+                    task.exception?.message ?: "Something went wrong",
+                    Toast.LENGTH_LONG
                 ).show()
             }
         }
@@ -211,8 +189,10 @@ private fun submitNewPassword(context: Context, password: String, confirmPasswor
 
 @Preview(showBackground = true)
 @Composable
-fun NewPasswordPreview() {
+fun ForgotPasswordPreview() {
     MaterialTheme {
-        NewPasswordScreen { _, _ -> /* no-op for preview */ }
+        ForgotPasswordScreen(
+            onSendClick = { /* no-op for preview */ }
+        )
     }
 }
