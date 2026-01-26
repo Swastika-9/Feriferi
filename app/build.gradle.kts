@@ -55,8 +55,12 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.navigation:navigation-compose:2.7.7")
-    implementation(libs.firebase.annotations)
-    implementation(libs.androidx.compose.foundation
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("com.google.firebase:firebase-firestore-ktx:24.10.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
 
     // 🔥 Firebase (via version catalog)
     implementation(platform(libs.firebase.bom))
@@ -68,6 +72,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)

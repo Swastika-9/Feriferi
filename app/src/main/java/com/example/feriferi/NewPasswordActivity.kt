@@ -1,28 +1,31 @@
 package com.example.feriferi
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 
-class ForgotPasswordActivity : ComponentActivity() {
+class NewPasswordActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             MaterialTheme {
-                ForgotPasswordScreen {
-
+                NewPasswordScreen {
+                    finish()
                 }
             }
         }
@@ -30,9 +33,10 @@ class ForgotPasswordActivity : ComponentActivity() {
 }
 
 @Composable
-fun ForgotPasswordScreen(onSendClick: () -> Unit) {
+fun NewPasswordScreen(onSubmitClick: () -> Unit) {
 
-    var email by remember { mutableStateOf(TextFieldValue("")) }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -43,29 +47,34 @@ fun ForgotPasswordScreen(onSendClick: () -> Unit) {
     ) {
 
         Text(
-            text = "Forget Password",
+            text = "New Password",
             style = MaterialTheme.typography.headlineSmall
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Enter Email Address") },
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Enter New Password") },
+            visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = { finish() }) {
-            Text("Back to sign in")
-        }
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
+            label = { Text("Confirm Password") },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = onSendClick,
+            onClick = onSubmitClick,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Send")
@@ -73,15 +82,13 @@ fun ForgotPasswordScreen(onSendClick: () -> Unit) {
     }
 }
 
-private fun ColumnScope.finish() {
-    TODO("Not yet implemented")
-}
-
-
 @Preview
 @Composable
-fun PreviewForgotPassword() {
-    ForgotPasswordScreen {
+fun PreviewNewPassword() {
+    NewPasswordScreen {
 
     }
 }
+
+
+
