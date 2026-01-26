@@ -1,6 +1,7 @@
 package com.example.feriferi
 
 import android.content.Context
+import com.example.feriferi.view.LoginActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
