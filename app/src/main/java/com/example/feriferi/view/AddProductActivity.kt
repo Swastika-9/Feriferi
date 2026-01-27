@@ -22,7 +22,7 @@ class AddProductActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 1. CLOUDINARY INIT
+
         try {
             MediaManager.get()
         } catch (e: Exception) {
@@ -38,7 +38,6 @@ class AddProductActivity : ComponentActivity() {
             val isUploading by viewModel.isUploading.observeAsState(initial = false)
             val statusMessage by viewModel.statusMessage.observeAsState(initial = "")
 
-            // 2. PERMISSION HANDLER
             val permissionLauncher = rememberLauncherForActivityResult(
                 ActivityResultContracts.RequestMultiplePermissions()
             ) { permissions ->
@@ -66,7 +65,6 @@ class AddProductActivity : ComponentActivity() {
                 }
             }
 
-            // 4. UI RENDER
             AddProductScreen(
                 onBack = { finish() },
                 onUpload = { product, uris ->

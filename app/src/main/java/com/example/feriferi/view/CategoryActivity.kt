@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.feriferi.R
 
+
 class CategoryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,8 +91,6 @@ fun CategoryBody(category: String) {
     }
 }
 
-// ---------------- PRODUCT CARD ----------------
-
 @Composable
 fun CategoryProductCard(product: CategoryProduct) {
 
@@ -137,16 +136,12 @@ fun CategoryProductCard(product: CategoryProduct) {
     }
 }
 
-// ---------------- DATA MODELS ----------------
-
 data class CategoryProduct(
     val name: String,
     val username: String,
     val category: String,
     val image: Int
 )
-
-// ---------------- DUMMY DATA ----------------
 
 fun sampleCategoryProducts(): List<CategoryProduct> {
     return listOf(

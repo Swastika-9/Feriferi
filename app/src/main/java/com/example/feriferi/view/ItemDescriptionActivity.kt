@@ -1,283 +1,77 @@
 package com.example.feriferi.view
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.feriferi.R
+import com.example.feriferi.model.Item
+import com.google.firebase.database.*
 
-@Composable
-fun ItemDescriptionScreen() {
+class ItemDescriptionActivity : ComponentActivity() {
 
-    val sizes = listOf("XS", "S", "M", "L", "XL")
-    var selectedSize by remember { mutableStateOf("M") }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF4EDE4))
-    ) {
-
-        /* ----- ----------- TOP BAR ---------------- */
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back",
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(start = 16.dp)
-                    .size(20.dp)
-            )
-
-            Text(
-                text = "फेरीPheri",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Icon(
-                imageVector = Icons.Default.NotificationsNone,
-                contentDescription = "Notification",
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(end = 16.dp)
-                    .size(20.dp)
-            )
+        val itemId = intent.getStringExtra("itemId")
+        if (itemId == null) {
+            Toast.makeText(this, "Item not found", Toast.LENGTH_SHORT).show()
+            finish()
+            return
         }
 
-        /* ---------------- IMAGE ---------------- */
-        Box {
-            Image(
-                painter = painterResource(id = R.drawable.cottonshirt), // replace with your drawable
-                contentDescription = "Product Image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(420.dp)
-            )
+        setContent {
+            var item by remember { mutableStateOf<Item?>(null) }
+            var isLoading by remember { mutableStateOf(true) }
 
-            Column(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Favorite,
-                    contentDescription = "Like",
-                    tint = Color(0xFFE53935),
-                    modifier = Modifier
-                        .size(28.dp)
-                        .background(Color.White, CircleShape)
-                        .padding(5.dp)
-                )
+            LaunchedEffect(itemId) {
+                val ref = FirebaseDatabase.getInstance()
+                    .getReference("items")
+                    .child(itemId)
 
-                Icon(
-                    imageVector = Icons.Default.Bookmark,
-                    contentDescription = "Save",
-                    modifier = Modifier
-                        .size(28.dp)
-                        .background(Color.White, CircleShape)
-                        .padding(5.dp)
-                )
-            }
-        }
+                ref.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        item = snapshot.getValue(Item::class.java)
+                        isLoading = false
 
-        /* ---------------- CONTENT ---------------- */
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
+                        if (item == null) {
+                            Toast.makeText(
+                                this@ItemDescriptionActivity,
+                                "Item not found in database",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            finish()
+                        }
+                    }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Relaxed Cotton Shirt",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = "Rs 600",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                    override fun onCancelled(error: DatabaseError) {
+                        isLoading = false
+                        Toast.makeText(
+                            this@ItemDescriptionActivity,
+                            "Failed to load item",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        finish()
+                    }
+                })
             }
 
-            Text(
-                text = "Original price: 1450",
-                fontSize = 12.sp,
-                color = Color.Gray,
-                textDecoration = TextDecoration.LineThrough
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = "@vivienne",
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
-
-            Text(
-                text = "214 products sold",
-                fontSize = 12.sp,
-                color = Color.Gray
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(text = "Size", fontWeight = FontWeight.Medium)
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                sizes.forEach {
-                    SizeChip(
-                        text = it,
-                        selected = it == selectedSize
-                    ) { selectedSize = it }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(text = "Product Details", fontWeight = FontWeight.Medium)
-
-            DetailRow("Color", "Cream")
-            DetailRow("Condition", "4.5/5")
-            DetailRow("Number of times worn", "2")
-            DetailRow("Company", "H&M")
-            DetailRow("Tags", "Available")
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Chip("Category: Clothing", Color(0xFFFFC107))
-                Chip("Status: Available", Color(0xFFE91E63))
-            }
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        /* ---------------- OFFER PRICE & ADD TO CART ---------------- */
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Button(
-                    onClick = { },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D6D6D)),
-                    modifier = Modifier
-                        .height(48.dp)
-                        .weight(1f)
-                ) {
-                    Text("Offer your Price", fontSize = 16.sp)
-                }
-
-                Spacer(modifier = Modifier.width(10.dp))
-
+            if (isLoading) {
                 Box(
-                    modifier = Modifier
-                        .height(48.dp)
-                        .width(80.dp)
-                        .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("585", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                    CircularProgressIndicator()
                 }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Button(
-                onClick = { },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8D6E63)),
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Add to Cart", fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Color.White)
+            } else {
+                item?.let {
+                    ItemDescriptionScreen(item = it)
+                }
             }
         }
     }
-}
-
-/* ---------------- COMPONENTS ---------------- */
-
-@Composable
-fun SizeChip(text: String, selected: Boolean, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .border(
-                1.dp,
-                if (selected) Color.Black else Color.Gray,
-                RoundedCornerShape(6.dp)
-            )
-            .background(
-                if (selected) Color.Black else Color.Transparent,
-                RoundedCornerShape(6.dp)
-            )
-            .clickable { onClick() }
-            .padding(horizontal = 14.dp, vertical = 6.dp)
-    ) {
-        Text(
-            text = text,
-            color = if (selected) Color.White else Color.Black,
-            fontSize = 13.sp
-        )
-    }
-}
-
-@Composable
-fun DetailRow(title: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(title, fontSize = 13.sp)
-        Text(value, fontSize = 13.sp, fontWeight = FontWeight.Medium)
-    }
-}
-
-@Composable
-fun Chip(text: String, color: Color) {
-    Text(
-        text = text,
-        color = Color.White,
-        fontSize = 12.sp,
-        modifier = Modifier
-            .background(color, RoundedCornerShape(12.dp))
-            .padding(horizontal = 12.dp, vertical = 5.dp)
-    )
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun PreviewItem() {
-    ItemDescriptionScreen()
 }

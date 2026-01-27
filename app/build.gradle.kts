@@ -67,11 +67,9 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.firebase.database)
     implementation(libs.firebase.firestore)
-    implementation(libs.coil.compose)
+    implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("com.cloudinary:cloudinary-android:2.1.0")
     implementation("com.google.android.material:material:1.11.0")
-    
-    // Missing ViewModel Compose dependency
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
     
     testImplementation(libs.junit)
