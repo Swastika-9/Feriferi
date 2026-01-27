@@ -19,5 +19,6 @@
     <string name="title_activity_report">ReportActivity</string>
     <string name="title_activity_verification">VerificationActivity</string>
     <string name="title_activity_new_password">NewPasswordActivity</string>
+    <string name="title_activity_complain">ComplainActivity</string>
     >>>>>>> a57d32e31817679f02fc0bd1262b32b7e3f2dd47
 </resources>
