@@ -215,7 +215,6 @@ fun HomeScreen() {
     }
 }
 
-/* ---------------- BANNERS ---------------- */
 @Composable
 fun BannerSection() {
 
@@ -246,7 +245,6 @@ fun BannerSection() {
     }
 }
 
-/* ---------------- PRODUCTS ---------------- */
 @Composable
 fun HomeProductsSection() {
 
@@ -319,7 +317,6 @@ fun HomeProductsSection() {
     }
 }
 
-/* ---------------- OTHER SCREENS ---------------- */
 @Composable
 fun CartScreen() =
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

@@ -210,9 +210,12 @@ fun PheriDropdownField(label: String, value: String, modifier: Modifier) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun EditProductPreview() {
-    val mockVM = EditProductViewModel()
-    EditProductScreen(viewModel = mockVM, onBack = {})
-}
+//Has error
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun EditProductScreenPreview() {
+//    EditProductScreen(
+//        viewModel = EditProductViewModel(),
+//        onBack = {}
+//    )
+//}
