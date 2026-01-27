@@ -33,7 +33,7 @@ import androidx.compose.foundation.lazy.items
 import com.example.feriferi.R
 
 private val SoftPink = Color(0xFFFFF1F4)
-private val CardPink = Color(0xFFFFE9EE)
+private val cardpink = Color(0xFFFFE9EE)
 private val OffWhiteCard = Color(0xFFFFFAFA)
 
 class DashboardActivity : ComponentActivity() {

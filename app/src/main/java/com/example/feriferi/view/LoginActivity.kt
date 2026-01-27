@@ -83,7 +83,6 @@ fun LoginScreen() {
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            // Email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -108,7 +107,6 @@ fun LoginScreen() {
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            // Password
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -147,9 +145,28 @@ fun LoginScreen() {
                 )
             )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Text(
+                    text = "Forgot password ?",
+                    color = Color(0xFF78350F),
+                    fontSize = 14.sp,
+                    modifier = Modifier.clickable {
+                        if (!isPreview) {
+                            activity!!.startActivity(
+                                Intent(activity, ForgotPasswordActivity::class.java)
+                            )
+                        }
+                    }
+                )
+            }
+
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Login Button
             Button(
                 onClick = {
                     if (isPreview) return@Button
@@ -193,7 +210,6 @@ fun LoginScreen() {
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            // Google Login (UI only)
             Button(
                 onClick = { },
                 colors = ButtonDefaults.buttonColors(containerColor = ButtonColor),
@@ -219,7 +235,6 @@ fun LoginScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Sign up
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
