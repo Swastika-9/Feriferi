@@ -46,7 +46,7 @@ class NotificationActivity : ComponentActivity() {
 @Composable
 fun NotificationScreen(onBack: () -> Unit) {
     val notifications = listOf(
-        NotificationItem("1", "Orde Confirmed", "Your order for 'Zara Sandals' has been confirmed.", "2m ago"),
+        NotificationItem("1", "Order Confirmed", "Your order for 'Zara Sandals' has been confirmed.", "2m ago"),
         NotificationItem("2", "Price Drop Alert!", "An item in your wishlist is now 20% off.", "1h ago"),
         NotificationItem("3", "New Message", "Seller 'Vivienne' sent you a message.", "3h ago", isRead = true),
         NotificationItem("4", "Shipment Update", "Your package is out for delivery.", "Yesterday"),
