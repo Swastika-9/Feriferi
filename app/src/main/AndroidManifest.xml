@@ -19,27 +19,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".NewPasswordActivity"
-            android:exported="true"
-            android:label="@string/title_activity_new_password"
-            android:theme="@style/Theme.Feriferi">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".VerificationActivity"
-            android:exported="true"
-            android:label="@string/title_activity_verification"
-            android:theme="@style/Theme.Feriferi">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
@@ -55,17 +34,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ReportComplaintActivity"
-            android:exported="true"
-            android:label="@string/title_activity_report_complaint"
-            android:theme="@style/Theme.Feriferi">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity> <!-- Only MainActivity is the launcher -->
         <activity
             android:name=".ReviewRatingActivity2"
             android:exported="true"
@@ -100,7 +69,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ForgotpasswordActivity"
+            android:name=".ForgotPasswordActivity"
             android:exported="true"
             android:label="@string/title_activity_forgotpassword"
             android:theme="@style/Theme.Feriferi">
