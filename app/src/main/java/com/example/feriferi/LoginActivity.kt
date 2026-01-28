@@ -38,7 +38,7 @@ class LoginActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FeriferiTheme {
-                LoginScreen()
+               LoginScreen()
             }
         }
     }
@@ -50,7 +50,7 @@ fun LoginScreen() {
     val context = LocalContext.current
     val isPreview = LocalInspectionMode.current
 
-    val activity = if (!isPreview) context as Activity else null
+    val activity = context as? Activity
     val auth = if (!isPreview) FirebaseAuth.getInstance() else null
 
     var email by remember { mutableStateOf("") }
@@ -164,10 +164,11 @@ fun LoginScreen() {
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
-                                activity!!.startActivity(
-                                    Intent(activity, DashboardActivity::class.java)
-                                )
-                                activity.finish()
+
+                                val intent = Intent(context, DashboardActivity::class.java)
+                                context.startActivity(intent)
+                                activity?.finish()
+
                             } else {
                                 Toast.makeText(
                                     context,
