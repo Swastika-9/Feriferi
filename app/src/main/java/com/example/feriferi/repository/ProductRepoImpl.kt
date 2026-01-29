@@ -1,9 +1,12 @@
 package com.example.feriferi.repository
 
+import android.util.Log
 import com.example.feriferi.model.ProductModel
 import com.google.firebase.firestore.FirebaseFirestore
 
 class ProductRepoImpl : ProductRepo {
+
+    private val TAG = "ProductRepoImpl"
 
     private val firestore = FirebaseFirestore.getInstance()
     private val productRef = firestore.collection("products")
@@ -18,10 +21,12 @@ class ProductRepoImpl : ProductRepo {
 
         doc.set(newProduct)
             .addOnSuccessListener {
+                Log.d(TAG, "Product added successfully id=${doc.id}")
                 callback(true, "Product added successfully")
             }
-            .addOnFailureListener {
-                callback(false, it.message ?: "Failed to add product")
+            .addOnFailureListener { ex ->
+                Log.e(TAG, "Failed to add product: ${ex.message}", ex)
+                callback(false, ex.message ?: "Failed to add product")
             }
     }
 
@@ -37,10 +42,12 @@ class ProductRepoImpl : ProductRepo {
         productRef.document(model.id)
             .set(model)
             .addOnSuccessListener {
+                Log.d(TAG, "Product updated successfully id=${model.id}")
                 callback(true, "Product updated successfully")
             }
-            .addOnFailureListener {
-                callback(false, it.message ?: "Failed to update product")
+            .addOnFailureListener { ex ->
+                Log.e(TAG, "Failed to update product: ${ex.message}", ex)
+                callback(false, ex.message ?: "Failed to update product")
             }
     }
 
@@ -51,10 +58,12 @@ class ProductRepoImpl : ProductRepo {
         productRef.document(productId)
             .delete()
             .addOnSuccessListener {
+                Log.d(TAG, "Product deleted successfully id=$productId")
                 callback(true, "Product deleted successfully")
             }
-            .addOnFailureListener {
-                callback(false, it.message ?: "Failed to delete product")
+            .addOnFailureListener { ex ->
+                Log.e(TAG, "Failed to delete product: ${ex.message}", ex)
+                callback(false, ex.message ?: "Failed to delete product")
             }
     }
 
@@ -72,8 +81,9 @@ class ProductRepoImpl : ProductRepo {
                     callback(false, "Product not found", null)
                 }
             }
-            .addOnFailureListener {
-                callback(false, it.message ?: "Failed to fetch product", null)
+            .addOnFailureListener { ex ->
+                Log.e(TAG, "Failed to fetch product: ${ex.message}", ex)
+                callback(false, ex.message ?: "Failed to fetch product", null)
             }
     }
     override fun getAllProduct(callback: (Boolean, String, List<ProductModel>?) -> Unit) {
@@ -84,8 +94,9 @@ class ProductRepoImpl : ProductRepo {
                 }
                 callback(true, "Products fetched successfully", products)
             }
-            .addOnFailureListener {
-                callback(false, it.message ?: "Failed to fetch products", null)
+            .addOnFailureListener { ex ->
+                Log.e(TAG, "Failed to fetch products: ${ex.message}", ex)
+                callback(false, ex.message ?: "Failed to fetch products", null)
             }
     }
 
@@ -102,8 +113,9 @@ class ProductRepoImpl : ProductRepo {
                 }
                 callback(true, "Category products fetched successfully", products)
             }
-            .addOnFailureListener {
-                callback(false, it.message ?: "Failed to fetch category products", null)
+            .addOnFailureListener { ex ->
+                Log.e(TAG, "Failed to fetch category products: ${ex.message}", ex)
+                callback(false, ex.message ?: "Failed to fetch category products", null)
             }
     }
 

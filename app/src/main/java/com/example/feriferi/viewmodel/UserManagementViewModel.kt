@@ -2,6 +2,7 @@ package com.example.feriferi.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.feriferi.model.User
+import com.example.feriferi.model.UserModel
 import com.example.feriferi.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,8 +11,8 @@ class UserManagementViewModel(
     private val repository: UserRepository = UserRepository()
 ) : ViewModel() {
 
-    private val _user = MutableStateFlow<User?>(null)
-    val user: StateFlow<User?> = _user
+    private val _user = MutableStateFlow<UserModel?>(null)
+    val user: StateFlow<UserModel?> = _user
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
@@ -22,10 +23,9 @@ class UserManagementViewModel(
     init {
         loadUser()
     }
-
     private fun loadUser() {
         _loading.value = true
-        repository.getCurrentUser(
+        repository.getCurrentUserWithCallback(
             onSuccess = {
                 _user.value = it
                 _loading.value = false
@@ -38,7 +38,7 @@ class UserManagementViewModel(
     }
 
     fun verifyUser() {
-        val uid = _user.value?.uid ?: return
+        val uid = _user.value?.userId ?: return
         _loading.value = true
 
         repository.verifyUser(
@@ -55,7 +55,7 @@ class UserManagementViewModel(
     }
 
     fun removeUser() {
-        val uid = _user.value?.uid ?: return
+        val uid = _user.value?.userId ?: return
         _loading.value = true
 
         repository.removeUser(
@@ -75,7 +75,7 @@ class UserManagementViewModel(
     fun changePassword(newPassword: String) {
         _loading.value = true
 
-        repository.changePassword(
+        repository.changePasswordUnsafe(
             newPassword = newPassword,
             onSuccess = {
                 _message.value = "Password changed successfully"

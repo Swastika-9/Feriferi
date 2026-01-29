@@ -25,12 +25,11 @@ class AdminDashboardActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // 2. Observe the data from Firebase via the ViewModel
+
                     val users by viewModel.users.observeAsState(initial = emptyList())
                     val products by viewModel.products.observeAsState(initial = emptyList())
                     val isLoading by viewModel.isLoading.observeAsState(initial = false)
 
-                    // 3. Pass the data and the ViewModel (to handle clicks) to the UI
                     AdminDashboardScreen(
                         users = users,
                         products = products,

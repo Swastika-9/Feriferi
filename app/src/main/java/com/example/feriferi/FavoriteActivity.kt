@@ -56,14 +56,13 @@ data class FavoriteItem(
     val image: Int
 )
 
-/* ------------------ SCREEN ------------------ */
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen() {
 
     val items = listOf(
-        FavoriteItem("Braclet", "@lennox", R.drawable.braclet),
+        FavoriteItem("Bracelet", "@lennox", R.drawable.braclet),
         FavoriteItem("Vintage table", "@elain", R.drawable.vintagetable),
         FavoriteItem("Short sleeve", "@vivienne", R.drawable.shortshirt),
         FavoriteItem("Sun glass", "@hooman", R.drawable.sunglass),
@@ -116,7 +115,6 @@ fun SearchBar() {
     )
 }
 
-/* ------------------ GRID ------------------ */
 
 @Composable
 fun FavoritesGrid(items: List<FavoriteItem>) {
@@ -131,9 +129,6 @@ fun FavoritesGrid(items: List<FavoriteItem>) {
         }
     }
     }
-
-
-/* ------------------ CARD ------------------ */
 
 @Composable
 fun FavoriteCard(item: FavoriteItem) {

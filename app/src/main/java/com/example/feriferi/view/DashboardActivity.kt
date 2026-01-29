@@ -30,7 +30,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.items
+import coil.compose.AsyncImage
 import com.example.feriferi.R
+import com.example.feriferi.model.LikedProducts
+import com.example.feriferi.model.ProductModel
+import com.example.feriferi.repository.FavoriteRepository
+import com.example.feriferi.repository.ProductRepoImpl
+import com.example.feriferi.ui.theme.CardPink
 
 private val SoftPink = Color(0xFFFFF1F4)
 private val cardpink = Color(0xFFFFE9EE)
@@ -247,70 +253,104 @@ fun BannerSection() {
 
 @Composable
 fun HomeProductsSection() {
-
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
-    val products = listOf(
-        Product("Relaxed Cotton Shirt", "vivienne", R.drawable.cottonshirt),
-        Product("Decor Chair", "hooman", R.drawable.decorchair),
-        Product("Green Linen Shirt", "lennox", R.drawable.greenshirt),
-        Product("Alchemist Book", "elain", R.drawable.book)
-    )
+    val productRepo = remember { ProductRepoImpl() }
+    val favoriteRepo = remember { FavoriteRepository() }
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = Modifier
-            .height(650.dp)
-            .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
+    var products by remember { mutableStateOf<List<ProductModel>>(emptyList()) }
+    val likedIds = remember { mutableStateListOf<String>() }
+    var isLoading by remember { mutableStateOf(true) }
 
-        items(products) { product ->
-            Card(
-                colors = CardDefaults.cardColors(containerColor = OffWhiteCard),
-                modifier = Modifier.clickable {
-                    context.startActivity(
-                        Intent(context, ItemDescriptionActivity::class.java)
-                            .putExtra("productName", product.name)
-                    )
+    LaunchedEffect(Unit) {
+        scope.launch {
+            try {
+
+                val favorites = favoriteRepo.getFavorites()
+                likedIds.addAll(favorites.map { it.productId })
+
+                productRepo.getAllProduct { success, _, fetchedProducts ->
+                    if (success && fetchedProducts != null) {
+                        products = fetchedProducts
+                    }
+                    isLoading = false
                 }
-            ) {
-                Column(Modifier.padding(8.dp)) {
+            } catch (e: Exception) {
+                e.printStackTrace()
+                isLoading = false
+            }
+        }
+    }
 
-                    Image(
-                        painter = painterResource(id = product.image),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .height(140.dp)
-                            .fillMaxWidth()
-                    )
+    if (isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(products) { product ->
+                val isLiked = likedIds.contains(product.id)
 
-                    Spacer(Modifier.height(6.dp))
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = OffWhiteCard),
+                    modifier = Modifier.clickable {
+                        context.startActivity(
+                            Intent(context, ItemDescriptionActivity::class.java)
+                                .putExtra("productId", product.id)
+                        )
+                    }
+                ) {
+                    Column(Modifier.padding(8.dp)) {
+                        AsyncImage(
+                            model = product.imageUrls.firstOrNull(),
+                            contentDescription = product.name,
+                            modifier = Modifier
+                                .height(140.dp)
+                                .fillMaxWidth()
+                        )
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(product.name, fontWeight = FontWeight.SemiBold)
-                        IconButton(onClick = {}) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_favorite_border_24),
-                                contentDescription = "Love"
-                            )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(product.name, fontWeight = FontWeight.SemiBold)
+
+                            IconButton(onClick = {
+                                scope.launch {
+                                    val likedProduct = LikedProducts(productId = product.id)
+
+                                    if (isLiked) {
+                                        favoriteRepo.toggleFavorite(likedProduct, isFavorite = false)
+                                        likedIds.remove(product.id)
+                                    } else {
+                                        favoriteRepo.toggleFavorite(likedProduct, isFavorite = true)
+                                        likedIds.add(product.id)
+                                    }
+                                }
+                            }) {
+                                Icon(
+                                    painter = painterResource(
+                                        if (isLiked)
+                                            R.drawable.baseline_favorite_24
+                                        else
+                                            R.drawable.baseline_favorite_border_24
+                                    ),
+                                    tint = if (isLiked) Color.Red else Color.Gray,
+                                    contentDescription = null
+                                )
+                            }
                         }
                     }
-
-                    Text(
-                        "@${product.username}",
-                        modifier = Modifier.clickable {
-                            context.startActivity(
-                                Intent(context, ProfileActivity::class.java)
-                                    .putExtra("username", product.username)
-                            )
-                        }
-                    )
                 }
             }
         }

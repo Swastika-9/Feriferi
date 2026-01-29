@@ -1,9 +1,12 @@
 package com.example.feriferi.viewmodel
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import com.example.feriferi.model.UserModel
-import com.example.feriferi.repository.UserRepo
+import com.example.feriferi.repository.UserRepository
 
-class UserViewModel(private val repo: UserRepo) {
+class UserViewModel(private val repo: UserRepository) : ViewModel() {
 
     fun registerUser(
         email: String,
@@ -12,17 +15,14 @@ class UserViewModel(private val repo: UserRepo) {
         onSuccess: () -> Unit,
         onFailure: (String) -> Unit
     ) {
-        repo.register(email, password) { success, message, userId ->
-            if (success) {
-                repo.addUserToDatabase(userId, user) { dbSuccess, dbMessage ->
-                    if (dbSuccess) {
-                        onSuccess()
-                    } else {
-                        onFailure(dbMessage)
-                    }
-                }
+        viewModelScope.launch {
+
+            val result = repo.registerUser(email, password, user)
+
+            if (result.first) {
+                onSuccess()
             } else {
-                onFailure(message)
+                onFailure(result.second)
             }
         }
     }

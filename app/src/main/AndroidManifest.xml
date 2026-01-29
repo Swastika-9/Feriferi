@@ -2,26 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false" />
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
         android:theme="@style/Theme.Feriferi">
 
-        <!-- ONLY ONE LAUNCHER -->
         <activity
             android:name=".view.MainActivity"
             android:exported="true">
@@ -31,34 +17,19 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".view.LoginActivity"
+        <activity android:name=".view.LoginActivity"
             android:exported="true" />
-
-        <activity
-            android:name=".view.RegistrationActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".view.AddProductActivity"
+        <activity android:name=".view.RegistrationActivity"
             android:exported="true" />
-
-<!--        <activity-->
-<!--            android:name=".view.AddToCartActivity"-->
-<!--            android:exported="false" />-->
-
-        <activity
-            android:name=".view.SellerDashboard"
+        <activity android:name=".view.DashboardActivity"
             android:exported="true" />
-
+        <activity android:name=".view.SellerDashboardActivity"
+            android:exported="true" />
+        <activity android:name=".view.AdminDashboardActivity"
+            android:exported="true" />
         <activity
-            android:name=".view.NotificationActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".view.ChatFairyActivity"
+            android:name=".ForgotPasswordActivity"
             android:exported="true" />
 
     </application>
-
 </manifest>

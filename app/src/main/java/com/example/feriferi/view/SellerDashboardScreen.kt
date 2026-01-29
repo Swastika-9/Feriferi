@@ -33,12 +33,12 @@ import com.example.feriferi.viewmodel.SellerProfileViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SellerDashboardScreen(onNavigateToAddProduct: () -> Unit) {
-    // --- BRAND COLORS ---
-    val AdminBrown = Color(0xFF8D736B)
-    val AdminBgWhite = Color(0xFFFFFFFF)
-    val AdminGray = Color(0xFF757575)
 
-    var selectedTab by remember { mutableStateOf(0) } // 0: Home, 1: Messages, 2: Settings
+    val adminBrown = Color(0xFF8D736B)
+    val adminBgWhite = Color(0xFFFFFFFF)
+    val adminGray = Color(0xFF757575)
+
+    var selectedTab by remember { mutableIntStateOf(0)}
     var showEditProfile by remember { mutableStateOf(false) }
     var editingProduct by remember { mutableStateOf<ProductModel?>(null) }
 
@@ -71,26 +71,26 @@ fun SellerDashboardScreen(onNavigateToAddProduct: () -> Unit) {
         )
     } else {
         Scaffold(
-            containerColor = AdminBgWhite,
+            containerColor = adminBgWhite,
             topBar = {
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
                             text = "फेरिPheri",
-                            style = TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Bold, color = AdminBrown)
+                            style = TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Bold, color = adminBrown)
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = { /* Open Drawer */ }) {
-                            Icon(Icons.Default.Menu, null, tint = AdminBrown)
+                            Icon(Icons.Default.Menu, null, tint = adminBrown)
                         }
                     },
                     actions = {
                         IconButton(onClick = { /* Notifications */ }) {
-                            Icon(Icons.Default.NotificationsNone, null, tint = AdminBrown)
+                            Icon(Icons.Default.NotificationsNone, null, tint = adminBrown)
                         }
                     },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = AdminBgWhite)
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = adminBgWhite)
                 )
             },
             bottomBar = {
@@ -104,9 +104,9 @@ fun SellerDashboardScreen(onNavigateToAddProduct: () -> Unit) {
                         icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
                         label = { Text("Home") },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = AdminBrown,
-                            selectedTextColor = AdminBrown,
-                            indicatorColor = AdminBrown.copy(alpha = 0.1f)
+                            selectedIconColor = adminBrown,
+                            selectedTextColor = adminBrown,
+                            indicatorColor = adminBrown.copy(alpha = 0.1f)
                         )
                     )
                     NavigationBarItem(
@@ -114,14 +114,14 @@ fun SellerDashboardScreen(onNavigateToAddProduct: () -> Unit) {
                         onClick = { selectedTab = 1 },
                         icon = { Icon(Icons.Default.Email, contentDescription = "Messages") },
                         label = { Text("Messages") },
-                        colors = NavigationBarItemDefaults.colors(selectedIconColor = AdminBrown, selectedTextColor = AdminBrown)
+                        colors = NavigationBarItemDefaults.colors(selectedIconColor = adminBrown, selectedTextColor = adminBrown)
                     )
                     NavigationBarItem(
                         selected = selectedTab == 2,
                         onClick = { selectedTab = 2 },
                         icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
                         label = { Text("Settings") },
-                        colors = NavigationBarItemDefaults.colors(selectedIconColor = AdminBrown, selectedTextColor = AdminBrown)
+                        colors = NavigationBarItemDefaults.colors(selectedIconColor = adminBrown, selectedTextColor = adminBrown)
                     )
                 }
             }
@@ -131,8 +131,8 @@ fun SellerDashboardScreen(onNavigateToAddProduct: () -> Unit) {
                     0 -> HomeContent(
                         seller = seller,
                         products = products,
-                        adminBrown = AdminBrown,
-                        adminGray = AdminGray,
+                        adminBrown = adminBrown,
+                        adminGray = adminBrown,
                         onEditProfile = { showEditProfile = true },
                         onAddProduct = onNavigateToAddProduct,
                         onEditProduct = { productId ->

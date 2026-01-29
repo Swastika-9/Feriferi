@@ -25,12 +25,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.feriferi.ForgotPasswordActivity
 import com.example.feriferi.R
 import com.example.feriferi.ui.theme.*
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,16 +47,17 @@ class LoginActivity : ComponentActivity() {
 
 @Composable
 fun LoginScreen() {
-
     val context = LocalContext.current
     val isPreview = LocalInspectionMode.current
+    val activity = context as? Activity
 
-    val activity = if (!isPreview) context as Activity else null
     val auth = if (!isPreview) FirebaseAuth.getInstance() else null
+    val database = if (!isPreview) FirebaseDatabase.getInstance().getReference("Users") else null
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
 
     Surface(
         color = BackgroundColor,
@@ -67,7 +69,6 @@ fun LoginScreen() {
                 .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Spacer(modifier = Modifier.height(40.dp))
 
             Text(
@@ -88,11 +89,7 @@ fun LoginScreen() {
                 onValueChange = { email = it },
                 placeholder = { Text("Email", color = TextBrown) },
                 leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_email_24),
-                        contentDescription = null,
-                        tint = TextBrown
-                    )
+                    Icon(painter = painterResource(R.drawable.baseline_email_24), contentDescription = null, tint = TextBrown)
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth(),
@@ -106,29 +103,18 @@ fun LoginScreen() {
             )
 
             Spacer(modifier = Modifier.height(15.dp))
-
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 placeholder = { Text("Password", color = TextBrown) },
                 leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_lock_24),
-                        contentDescription = null,
-                        tint = TextBrown
-                    )
+                    Icon(painter = painterResource(R.drawable.baseline_lock_24), contentDescription = null, tint = TextBrown)
                 },
-                visualTransformation = if (passwordVisible)
-                    VisualTransformation.None
-                else
-                    PasswordVisualTransformation(),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
-                            painter = if (passwordVisible)
-                                painterResource(R.drawable.baseline_visibility_off_24)
-                            else
-                                painterResource(R.drawable.baseline_visibility_24),
+                            painter = if (passwordVisible) painterResource(R.drawable.baseline_visibility_off_24) else painterResource(R.drawable.baseline_visibility_24),
                             contentDescription = null,
                             tint = TextBrown
                         )
@@ -147,119 +133,96 @@ fun LoginScreen() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 Text(
                     text = "Forgot password ?",
                     color = Color(0xFF78350F),
                     fontSize = 14.sp,
                     modifier = Modifier.clickable {
-                        if (!isPreview) {
-                            activity!!.startActivity(
-                                Intent(activity, ForgotPasswordActivity::class.java)
-                            )
-                        }
+                        // This opens the ForgotPasswordActivity
+                        context.startActivity(Intent(context, ForgotPasswordActivity::class.java))
                     }
                 )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            Button(
-                onClick = {
-                    if (isPreview) return@Button
-
-                    if (email.isBlank() || password.isBlank()) {
-                        Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-
-                    auth!!
-                        .signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
-                                activity!!.startActivity(
-                                    Intent(activity, DashboardActivity::class.java)
-                                )
-                                activity.finish()
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    "Login failed: ${task.exception?.message}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+            if (isLoading) {
+                CircularProgressIndicator(color = ButtonColor)
+            } else {
+                Button(
+                    onClick = {
+                        if (isPreview) return@Button
+                        if (email.isBlank() || password.isBlank()) {
+                            Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                            return@Button
                         }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = ButtonColor)
-            ) {
-                Text("Log in", color = WhiteText)
+
+                        isLoading = true
+                        auth?.signInWithEmailAndPassword(email, password)
+                            ?.addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    val userId = auth.currentUser?.uid
+                                    if (userId != null) {
+                                        // Added null safety for database
+                                        database?.child(userId)?.get()?.addOnSuccessListener { snapshot ->
+                                            isLoading = false
+                                            val role = snapshot.child("role").getValue(String::class.java)
+
+                                            when (role) {
+                                                "Admin" -> context.startActivity(Intent(context, AdminDashboardActivity::class.java))
+                                                "Seller" -> context.startActivity(Intent(context,
+                                                    SellerDashboardActivity::class.java))
+                                                else -> context.startActivity(Intent(context, DashboardActivity::class.java))
+                                            }
+                                            activity?.finish()
+                                        }?.addOnFailureListener {
+                                            isLoading = false
+                                            Toast.makeText(context, "Error fetching user role", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                } else {
+                                    isLoading = false
+                                    Toast.makeText(context, "Login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = ButtonColor)
+                ) {
+                    Text("Log in", color = WhiteText)
+                }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
-
             Text("OR", color = TextBrown, fontWeight = FontWeight.SemiBold)
-
             Spacer(modifier = Modifier.height(15.dp))
 
             Button(
                 onClick = { },
                 colors = ButtonDefaults.buttonColors(containerColor = ButtonColor),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
+                modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.google),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = Color.Unspecified
-                )
+                Icon(painter = painterResource(R.drawable.google), contentDescription = null, modifier = Modifier.size(20.dp), tint = Color.Unspecified)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "Log in with Google",
-                    color = WhiteText,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Text("Log in with Google", color = WhiteText, fontSize = 14.sp, fontWeight = FontWeight.Medium)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 Text("Don't have an account? ", color = TextBrown)
                 Text(
                     "Sign Up",
                     color = ButtonColor,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable {
-                        if (!isPreview) {
-                            activity!!.startActivity(
-                                Intent(activity, RegistrationActivity::class.java)
-                            )
-                        }
+                        if (!isPreview) activity?.startActivity(Intent(activity, RegistrationActivity::class.java))
                     }
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoginPreview() {
-    FeriferiTheme {
-        LoginScreen()
     }
 }

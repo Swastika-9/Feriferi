@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import com.example.feriferi.R
 import com.example.feriferi.model.UserModel
 import com.example.feriferi.repository.UserRepoImpl
+import com.example.feriferi.repository.UserRepository
 import com.example.feriferi.ui.theme.*
 import com.example.feriferi.viewmodel.UserViewModel
 
@@ -57,14 +58,13 @@ class RegistrationActivity : ComponentActivity() {
 
 @Composable
 fun RegisterScreen() {
-    // Correct way to initialize ViewModel in Compose to survive re-compositions
-    val userViewModel = remember { UserViewModel(UserRepoImpl()) }
-
+    val userViewModel = remember { UserViewModel(UserRepository()) }
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var visibility by remember { mutableStateOf(false) }
     var selectedRole by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
 
     val context = LocalContext.current
     val activity = context as? Activity
@@ -76,7 +76,7 @@ fun RegisterScreen() {
                 .padding(padding)
                 .background(BackgroundColor)
                 .padding(horizontal = 20.dp)
-                .verticalScroll(rememberScrollState()), // Added scroll for smaller screens
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
@@ -95,7 +95,6 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            // Full Name
             OutlinedTextField(
                 value = fullName,
                 onValueChange = { fullName = it },
@@ -115,7 +114,6 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            // Email
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -124,6 +122,25 @@ fun RegisterScreen() {
                     Icon(Icons.Filled.Email, contentDescription = null, tint = TextBrown)
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = TextFieldColor,
+                    unfocusedContainerColor = TextFieldColor,
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent
+                )
+            )
+
+            Spacer(modifier = Modifier.height(15.dp))
+
+            OutlinedTextField(
+                value = username,
+                onValueChange = { username = it.lowercase() },
+                placeholder = { Text("Username", color = TextBrown) },
+                leadingIcon = {
+                    Icon(Icons.Filled.Person, contentDescription = null, tint = TextBrown)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -168,7 +185,7 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Role Selection
+            // ROLE SELECTION (Admin Hidden)
             Text(
                 text = "Choose your role",
                 color = TextBrown,
@@ -225,9 +242,10 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // REGISTER BUTTON
             Button(
                 onClick = {
-                    if (fullName.isBlank() || email.isBlank() || password.isBlank() || selectedRole.isBlank()) {
+                    if (fullName.isBlank() || username.isBlank() || email.isBlank() || password.isBlank() || selectedRole.isBlank()) {
                         Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
@@ -235,7 +253,8 @@ fun RegisterScreen() {
                     val user = UserModel(
                         fullName = fullName,
                         email = email,
-                        role = selectedRole
+                        role = selectedRole,
+                        username = username
                     )
 
                     userViewModel.registerUser(
@@ -263,6 +282,7 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // LOGIN LINK
             Text(
                 buildAnnotatedString {
                     append("Already have an account? ")
