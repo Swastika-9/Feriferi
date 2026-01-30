@@ -7,7 +7,6 @@ class FeriferiApp: Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // Initialize Cloudinary
         val config = HashMap<String, String>()
         config["cloud_name"] = "dizcwwcat"
         config["api_key"] = "934843177742589"

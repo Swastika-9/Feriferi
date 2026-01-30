@@ -52,7 +52,7 @@ fun LoginScreen() {
     val activity = context as? Activity
 
     val auth = if (!isPreview) FirebaseAuth.getInstance() else null
-    val database = if (!isPreview) FirebaseDatabase.getInstance().getReference("Users") else null
+    val database = if (!isPreview) FirebaseDatabase.getInstance().getReference("users") else null
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -114,7 +114,9 @@ fun LoginScreen() {
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
-                            painter = if (passwordVisible) painterResource(R.drawable.baseline_visibility_off_24) else painterResource(R.drawable.baseline_visibility_24),
+                            painter = if (passwordVisible) painterResource(R.drawable.baseline_visibility_24) else
+                                painterResource(R.drawable.baseline_visibility_off_24),
+
                             contentDescription = null,
                             tint = TextBrown
                         )
@@ -139,7 +141,7 @@ fun LoginScreen() {
                     color = Color(0xFF78350F),
                     fontSize = 14.sp,
                     modifier = Modifier.clickable {
-                        // This opens the ForgotPasswordActivity
+
                         context.startActivity(Intent(context, ForgotPasswordActivity::class.java))
                     }
                 )
@@ -153,41 +155,75 @@ fun LoginScreen() {
                 Button(
                     onClick = {
                         if (isPreview) return@Button
+
                         if (email.isBlank() || password.isBlank()) {
                             Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
 
                         isLoading = true
-                        auth?.signInWithEmailAndPassword(email, password)
-                            ?.addOnCompleteListener { task ->
-                                if (task.isSuccessful) {
-                                    val userId = auth.currentUser?.uid
-                                    if (userId != null) {
-                                        // Added null safety for database
-                                        database?.child(userId)?.get()?.addOnSuccessListener { snapshot ->
-                                            isLoading = false
-                                            val role = snapshot.child("role").getValue(String::class.java)
 
-                                            when (role) {
-                                                "Admin" -> context.startActivity(Intent(context, AdminDashboardActivity::class.java))
-                                                "Seller" -> context.startActivity(Intent(context,
-                                                    SellerDashboardActivity::class.java))
-                                                else -> context.startActivity(Intent(context, DashboardActivity::class.java))
-                                            }
-                                            activity?.finish()
-                                        }?.addOnFailureListener {
-                                            isLoading = false
-                                            Toast.makeText(context, "Error fetching user role", Toast.LENGTH_SHORT).show()
-                                        }
-                                    }
-                                } else {
+                        auth?.signInWithEmailAndPassword(email, password)
+                            ?.addOnSuccessListener {
+
+                                val userId = auth.currentUser?.uid
+                                if (userId == null) {
                                     isLoading = false
-                                    Toast.makeText(context, "Login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "User ID not found", Toast.LENGTH_SHORT).show()
+                                    return@addOnSuccessListener
                                 }
+
+                                database
+                                    ?.child(userId)
+                                    ?.child("role")
+                                    ?.get()
+                                    ?.addOnSuccessListener { snapshot ->
+
+                                        isLoading = false
+                                        val role = snapshot.getValue(String::class.java)
+
+                                        when (role?.lowercase()) {
+                                            "admin" -> {
+                                                context.startActivity(
+                                                    Intent(context, AdminDashboardActivity::class.java)
+                                                )
+                                            }
+                                            "seller" -> {
+                                                context.startActivity(
+                                                    Intent(context, SellerDashboardActivity::class.java)
+                                                )
+                                            }
+                                            else -> {
+                                                // buyer OR null
+                                                context.startActivity(
+                                                    Intent(context, DashboardActivity::class.java)
+                                                )
+                                            }
+                                        }
+
+                                        activity?.finish()
+                                    }
+                                    ?.addOnFailureListener {
+                                        isLoading = false
+                                        Toast.makeText(
+                                            context,
+                                            "Failed to fetch role: ${it.message}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                            }
+                            ?.addOnFailureListener {
+                                isLoading = false
+                                Toast.makeText(
+                                    context,
+                                    "Login failed: ${it.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                     },
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = ButtonColor)
                 ) {

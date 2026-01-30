@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.MaterialTheme
+import com.example.feriferi.view.com.example.feriferi.view.SettingsScreen
 
 class SettingsActivity : ComponentActivity() {
 

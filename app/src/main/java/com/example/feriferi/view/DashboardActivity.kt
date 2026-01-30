@@ -37,6 +37,7 @@ import com.example.feriferi.model.ProductModel
 import com.example.feriferi.repository.FavoriteRepository
 import com.example.feriferi.repository.ProductRepoImpl
 import com.example.feriferi.ui.theme.CardPink
+import com.example.feriferi.view.com.example.feriferi.view.SettingsScreen
 
 private val SoftPink = Color(0xFFFFF1F4)
 private val cardpink = Color(0xFFFFE9EE)
