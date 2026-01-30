@@ -57,14 +57,13 @@ class RegistrationActivity : ComponentActivity() {
 
 @Composable
 fun RegisterScreen() {
-    // Correct way to initialize ViewModel in Compose to survive re-compositions
     val userViewModel = remember { UserViewModel(UserRepoImpl()) }
-
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var visibility by remember { mutableStateOf(false) }
     var selectedRole by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
 
     val context = LocalContext.current
     val activity = context as? Activity
@@ -76,7 +75,7 @@ fun RegisterScreen() {
                 .padding(padding)
                 .background(BackgroundColor)
                 .padding(horizontal = 20.dp)
-                .verticalScroll(rememberScrollState()), // Added scroll for smaller screens
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
@@ -95,7 +94,7 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            // Full Name
+            // FULL NAME
             OutlinedTextField(
                 value = fullName,
                 onValueChange = { fullName = it },
@@ -115,7 +114,7 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            // Email
+            // EMAIL
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -136,6 +135,26 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(15.dp))
 
+            OutlinedTextField(
+                value = username,
+                onValueChange = { username = it.lowercase() },
+                placeholder = { Text("Username", color = TextBrown) },
+                leadingIcon = {
+                    Icon(Icons.Filled.Person, contentDescription = null, tint = TextBrown)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = TextFieldColor,
+                    unfocusedContainerColor = TextFieldColor,
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent
+                )
+            )
+
+            Spacer(modifier = Modifier.height(15.dp))
+
+            // PASSWORD
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -168,7 +187,7 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Role Selection
+            // ROLE SELECTION
             Text(
                 text = "Choose your role",
                 color = TextBrown,
@@ -225,17 +244,20 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // REGISTER BUTTON
             Button(
                 onClick = {
-                    if (fullName.isBlank() || email.isBlank() || password.isBlank() || selectedRole.isBlank()) {
+                    if (fullName.isBlank() || username.isBlank() || email.isBlank() || password.isBlank() || selectedRole.isBlank()) {
                         Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
 
+                    // Create user with username included
                     val user = UserModel(
                         fullName = fullName,
                         email = email,
-                        role = selectedRole
+                        role = selectedRole,
+                        username = username  // ← USERNAME INCLUDED
                     )
 
                     userViewModel.registerUser(
@@ -263,6 +285,7 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            // LOGIN LINK
             Text(
                 buildAnnotatedString {
                     append("Already have an account? ")

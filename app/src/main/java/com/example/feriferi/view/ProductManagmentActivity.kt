@@ -1,4 +1,4 @@
-package com.example.feriferi
+package com.example.feriferi.view
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -39,9 +39,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.collectAsState
-import com.example.feriferi.viewmodel.ProductViewModel
+import androidx.compose.ui.unit.TextUnit
+import com.example.feriferi.R
 
 
 class ProductManagementActivity : ComponentActivity() {
@@ -205,7 +204,7 @@ fun ProductManagementScreen() {
 fun ProductLine(
     label: String,
     value: String,
-    size: androidx.compose.ui.unit.TextUnit
+    size: TextUnit
 ) {
     Row(modifier = Modifier.padding(vertical = 1.dp)) {
         Text(text = "$label: ", fontWeight = FontWeight.Bold, fontSize = size)

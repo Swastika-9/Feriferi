@@ -33,7 +33,6 @@ import androidx.compose.foundation.lazy.items
 import com.example.feriferi.R
 
 private val SoftPink = Color(0xFFFFF1F4)
-private val cardpink = Color(0xFFFFE9EE)
 private val OffWhiteCard = Color(0xFFFFFAFA)
 
 class DashboardActivity : ComponentActivity() {
@@ -230,7 +229,7 @@ fun BannerSection() {
     ) {
         items(banners) { banner ->
             Card(
-                colors = CardDefaults.cardColors(containerColor = CardPink),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE9EE)), // Fixed: Using literal color to avoid conflict
                 modifier = Modifier
                     .width(320.dp)
                     .height(160.dp)

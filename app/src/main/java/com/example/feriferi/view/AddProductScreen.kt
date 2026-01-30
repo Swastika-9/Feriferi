@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.feriferi.view
 
 import android.net.Uri
@@ -29,7 +31,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.feriferi.model.ProductModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddProductScreen(
     onBack: () -> Unit,
@@ -37,11 +38,24 @@ fun AddProductScreen(
     isUploading: Boolean
 ) {
     val context = LocalContext.current
-
     val AdminBrown = Color(0xFF8D736B)
     val AdminBgWhite = Color(0xFFFFFFFF)
-    val AdminGray = Color(0xFF757575)
 
+    // --- 1. STATE MAPPED TO YOUR MODEL ---
+    var name by remember { mutableStateOf("") }
+    var price by remember { mutableStateOf("") }
+    var originalPrice by remember { mutableStateOf("") }
+    var quantity by remember { mutableStateOf("1") }
+    var brand by remember { mutableStateOf("") }
+    var size by remember { mutableStateOf("") }
+    var color by remember { mutableStateOf("") }
+    var condition by remember { mutableStateOf("") }
+    var timesWorn by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var tag by remember { mutableStateOf("") }
+    var gender by remember { mutableStateOf("") }
+
+    // --- 2. CATEGORY HIERARCHY ---
     val categoriesMap = mapOf(
         "Clothing" to listOf("Men's", "Women's", "Kid's", "Sales"),
         "Footwear" to listOf("Men's", "Women's", "Kid's", "Sales"),
@@ -49,150 +63,72 @@ fun AddProductScreen(
         "Electronics" to listOf("Gadgets", "Oven", "Washing Machines", "Cookware"),
         "Books" to listOf("Novel", "Stories", "Essay", "Others")
     )
-
-    var name by remember { mutableStateOf("") }
-    var price by remember { mutableStateOf("") }
-    var originalPrice by remember { mutableStateOf("") }
-    var quantity by remember { mutableStateOf("1") }
-    var description by remember { mutableStateOf("") }
-    var brand by remember { mutableStateOf("") }
-    var color by remember { mutableStateOf("") }
-    var timesWorn by remember { mutableStateOf("") }
     var mainCat by remember { mutableStateOf("Select Category") }
     var subCat by remember { mutableStateOf("Select Sub-Category") }
+
+    // --- 3. LAPTOP-FRIENDLY IMAGE PICKER ---
     var selectedImageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
-
-    var mainExpanded by remember { mutableStateOf(false) }
-    var subExpanded by remember { mutableStateOf(false) }
-
-    val launcher =
-        rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) {
-            if (it.size in 3..10) selectedImageUris = it
-            else Toast.makeText(context, "Select 3–10 images", Toast.LENGTH_SHORT).show()
-        }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
+        if (uris.isNotEmpty()) selectedImageUris = uris else Toast.makeText(context, "No images selected", Toast.LENGTH_SHORT).show()
+    }
 
     Scaffold(
         containerColor = AdminBgWhite,
         topBar = {
             CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        "फेरिPheri",
-                        style = TextStyle(
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AdminBrown
-                        )
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = AdminBrown)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.Close, "Cancel", tint = AdminBrown)
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = AdminBgWhite
-                )
+                title = { Text("फेरिPheri", style = TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Bold, color = AdminBrown)) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", tint = AdminBrown) } }
             )
         }
     ) { padding ->
+        Column(modifier = Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp)) {
 
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp)
-        ) {
-
-            Text(
-                "Add New Product",
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    color = AdminGray,
-                    fontWeight = FontWeight.Bold
-                )
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text("Photos (${selectedImageUris.size}/10) - Min 3", fontWeight = FontWeight.Bold)
-
-            LazyRow(
-                modifier = Modifier.padding(vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            // Photo Selection Section
+            Text("Photos (${selectedImageUris.size}/10) - Min 1", fontWeight = FontWeight.Bold, color = AdminBrown)
+            LazyRow(modifier = Modifier.padding(vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 item {
-                    Box(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFF5F5F5))
-                            .border(
-                                1.dp,
-                                Color.LightGray,
-                                RoundedCornerShape(12.dp)
-                            )
-                            .clickable { launcher.launch("image/*") },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.AddAPhoto,
-                            contentDescription = null,
-                            tint = AdminBrown
-                        )
+                    Box(modifier = Modifier.size(100.dp).clip(RoundedCornerShape(12.dp)).background(Color(0xFFF5F5F5)).border(1.dp, Color.LightGray, RoundedCornerShape(12.dp)).clickable { launcher.launch("image/*") }, contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.AddAPhoto, null, tint = AdminBrown)
                     }
                 }
-
                 items(selectedImageUris) { uri ->
-                    AsyncImage(
-                        model = uri,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(RoundedCornerShape(12.dp)),
-                        contentScale = ContentScale.Crop
-                    )
+                    AsyncImage(model = uri, contentDescription = null, modifier = Modifier.size(100.dp).clip(RoundedCornerShape(12.dp)), contentScale = ContentScale.Crop)
                 }
             }
 
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Product Name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Row(
-                modifier = Modifier.padding(top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedTextField(
-                    value = price,
-                    onValueChange = { price = it },
-                    label = { Text("Price") },
-                    prefix = { Text("NPR ") },
-                    modifier = Modifier.weight(1f),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
-
-                OutlinedTextField(
-                    value = originalPrice,
-                    onValueChange = { originalPrice = it },
-                    label = { Text("Original") },
-                    prefix = { Text("NPR ") },
-                    modifier = Modifier.weight(1f),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
+            // Category & Sub-Category Dropdowns
+            CategoryDropdown("Category", categoriesMap.keys.toList(), mainCat) {
+                mainCat = it
+                subCat = "Select Sub-Category"
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
+            CategoryDropdown("Sub-Category", categoriesMap[mainCat] ?: emptyList(), subCat) {
+                subCat = it
+            }
+
+            // Input Fields
+            OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Product Name") }, modifier = Modifier.fillMaxWidth())
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(value = price, onValueChange = { price = it }, label = { Text("Price (NPR)") }, modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                OutlinedTextField(value = originalPrice, onValueChange = { originalPrice = it }, label = { Text("Original Price") }, modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+            }
+
+            OutlinedTextField(value = brand, onValueChange = { brand = it }, label = { Text("Company / Brand") }, modifier = Modifier.fillMaxWidth())
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(value = size, onValueChange = { size = it }, label = { Text("Size") }, modifier = Modifier.weight(1f))
+                OutlinedTextField(value = color, onValueChange = { color = it }, label = { Text("Color") }, modifier = Modifier.weight(1f))
+            }
+
+            OutlinedTextField(value = timesWorn, onValueChange = { timesWorn = it }, label = { Text("Number of times worn") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text("Description") }, modifier = Modifier.fillMaxWidth(), minLines = 3)
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Submit Button
             Button(
                 onClick = {
                     val product = ProductModel(
@@ -202,27 +138,50 @@ fun AddProductScreen(
                         quantity = quantity.toIntOrNull() ?: 1,
                         category = mainCat,
                         subCategory = subCat,
-                        brand = brand,
+                        size = size,
                         color = color,
-                        tag = timesWorn,
-                        description = description
+                        brand = brand,
+                        timesWorn = timesWorn,
+                        description = description,
+                        gender = gender
                     )
                     onUpload(product, selectedImageUris)
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                modifier = Modifier.fillMaxWidth().height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = AdminBrown),
-                enabled = !isUploading && selectedImageUris.size >= 3 && name.isNotBlank()
+                enabled = !isUploading && selectedImageUris.isNotEmpty() && name.isNotBlank()
             ) {
-                if (isUploading) {
-                    CircularProgressIndicator(
-                        color = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                } else {
-                    Text("Publish Product", fontWeight = FontWeight.Bold)
-                }
+                if (isUploading) CircularProgressIndicator(color = Color.White) else Text("Publish Product")
+            }
+        }
+    }
+}
+
+// --- HELPER DROPDOWN COMPONENT ---
+@Composable
+fun CategoryDropdown(
+    label: String,
+    options: List<String>,
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = selectedOption,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = { IconButton(onClick = { expanded = !expanded }) { Icon(Icons.Default.ArrowDropDown, null) } }
+        )
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.fillMaxWidth(0.9f)) {
+            options.forEach { option ->
+                DropdownMenuItem(text = { Text(option) }, onClick = {
+                    onOptionSelected(option)
+                    expanded = false
+                })
             }
         }
     }

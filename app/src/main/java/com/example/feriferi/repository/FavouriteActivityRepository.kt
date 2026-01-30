@@ -1,4 +1,5 @@
 package com.example.feriferi
+import com.example.feriferi.view.FavoriteItem
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 

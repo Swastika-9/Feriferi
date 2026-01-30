@@ -1,7 +1,6 @@
-package com.example.feriferi
+package com.example.feriferi.view
 
 import android.content.Context
-import com.example.feriferi.view.LoginActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -18,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import android.app.Activity
+import android.content.Intent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -151,7 +151,7 @@ fun ForgotPasswordScreen(onSendClick: (String) -> Unit) {
             TextButton(
                 onClick = {
                     activity?.startActivity(
-                        android.content.Intent(activity, LoginActivity::class.java)
+                        Intent(activity, LoginActivity::class.java)
                     )
                     activity?.finish()
                 }

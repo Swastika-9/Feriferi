@@ -1,111 +1,91 @@
 package com.example.feriferi.repository
 
+import android.net.Uri
+import com.cloudinary.android.MediaManager
+import com.cloudinary.android.callback.ErrorInfo
+import com.cloudinary.android.callback.UploadCallback
 import com.example.feriferi.model.ProductModel
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
-class ProductRepoImpl : ProductRepo {
+class ProductRepoImpl {
 
-    private val firestore = FirebaseFirestore.getInstance()
-    private val productRef = firestore.collection("products")
+    private val db = FirebaseDatabase.getInstance()
+    private val productsRef = db.getReference("Products")
 
-
-    override fun addProduct(
-        model: ProductModel,
-        callback: (Boolean, String) -> Unit
-    ) {
-        val doc = productRef.document()
-        val newProduct = model.copy(id = doc.id)
-
-        doc.set(newProduct)
-            .addOnSuccessListener {
-                callback(true, "Product added successfully")
+    // --- READ PRODUCTS ---
+    fun getAllProduct(callback: (Boolean, String?, List<ProductModel>?) -> Unit) {
+        productsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val productList = mutableListOf<ProductModel>()
+                for (child in snapshot.children) {
+                    val product = child.getValue(ProductModel::class.java)
+                    if (product != null) {
+                        productList.add(product)
+                    }
+                }
+                callback(true, "Success", productList)
             }
-            .addOnFailureListener {
-                callback(false, it.message ?: "Failed to add product")
+
+            override fun onCancelled(error: DatabaseError) {
+                callback(false, error.message, null)
             }
+        })
     }
 
-    override fun updateProduct(
-        model: ProductModel,
-        callback: (Boolean, String) -> Unit
-    ) {
-        if (model.id.isEmpty()) {
-            callback(false, "Product ID is missing")
-            return
+    // --- ADD PRODUCT ---
+    suspend fun addProduct(
+        product: ProductModel,
+        imageUri: Uri?
+    ): Pair<Boolean, String> {
+        return try {
+            var finalImageUrl = ""
+
+            // Upload Image first
+            if (imageUri != null) {
+                finalImageUrl = uploadToCloudinary(imageUri)
+            }
+
+            val newProductId = productsRef.push().key ?: return Pair(false, "Database Error")
+
+            val finalProduct = product.copy(
+                id = newProductId,
+                imageUrls = if (finalImageUrl.isNotEmpty()) listOf(finalImageUrl) else emptyList()
+            )
+
+            suspendCancellableCoroutine<Unit> { continuation ->
+                productsRef.child(newProductId).setValue(finalProduct)
+                    .addOnSuccessListener { continuation.resume(Unit) }
+                    .addOnFailureListener { continuation.resumeWithException(it) }
+            }
+
+            Pair(true, "Product Added Successfully")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Pair(false, e.message ?: "Failed to add product")
         }
-
-        productRef.document(model.id)
-            .set(model)
-            .addOnSuccessListener {
-                callback(true, "Product updated successfully")
-            }
-            .addOnFailureListener {
-                callback(false, it.message ?: "Failed to update product")
-            }
     }
 
-    override fun deleteProduct(
-        productId: String,
-        callback: (Boolean, String) -> Unit
-    ) {
-        productRef.document(productId)
-            .delete()
-            .addOnSuccessListener {
-                callback(true, "Product deleted successfully")
-            }
-            .addOnFailureListener {
-                callback(false, it.message ?: "Failed to delete product")
-            }
-    }
-
-    override fun getProductById(
-        productId: String,
-        callback: (Boolean, String, ProductModel?) -> Unit
-    ) {
-        productRef.document(productId)
-            .get()
-            .addOnSuccessListener { snapshot ->
-                if (snapshot.exists()) {
-                    val product = snapshot.toObject(ProductModel::class.java)
-                    callback(true, "Product fetched successfully", product)
-                } else {
-                    callback(false, "Product not found", null)
+    // --- CLOUDINARY UPLOAD ---
+    private suspend fun uploadToCloudinary(uri: Uri): String = suspendCancellableCoroutine { continuation ->
+        MediaManager.get().upload(uri)
+            .unsigned("product_images") // <--- THIS IS THE FIX. IT MATCHES YOUR SCREENSHOT.
+            .callback(object : UploadCallback {
+                override fun onStart(requestId: String) {}
+                override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {}
+                override fun onSuccess(requestId: String, resultData: Map<*, *>) {
+                    continuation.resume(resultData["secure_url"].toString())
                 }
-            }
-            .addOnFailureListener {
-                callback(false, it.message ?: "Failed to fetch product", null)
-            }
-    }
-    override fun getAllProduct(callback: (Boolean, String, List<ProductModel>?) -> Unit) {
-        productRef.get()
-            .addOnSuccessListener { snapshot ->
-                val products = snapshot.documents.mapNotNull {
-                    it.toObject(ProductModel::class.java)
+                override fun onError(requestId: String, error: ErrorInfo) {
+                    continuation.resumeWithException(Exception("Cloudinary Error: ${error.description}"))
                 }
-                callback(true, "Products fetched successfully", products)
-            }
-            .addOnFailureListener {
-                callback(false, it.message ?: "Failed to fetch products", null)
-            }
+                override fun onReschedule(requestId: String, error: ErrorInfo) {}
+            })
+            .dispatch()
     }
-
-    override fun getProductByCategory(
-        categoryId: String,
-        callback: (Boolean, String, List<ProductModel>?) -> Unit
-    )  {
-        productRef
-            .whereEqualTo("category", categoryId)
-            .get()
-            .addOnSuccessListener { snapshot ->
-                val products = snapshot.documents.mapNotNull {
-                    it.toObject(ProductModel::class.java)
-                }
-                callback(true, "Category products fetched successfully", products)
-            }
-            .addOnFailureListener {
-                callback(false, it.message ?: "Failed to fetch category products", null)
-            }
-    }
-
-
 }

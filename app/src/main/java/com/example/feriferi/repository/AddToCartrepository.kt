@@ -1,47 +1,16 @@
 package com.example.feriferi.repository
 
-import com.example.feriferi.model.CartItem
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
+import com.example.feriferi.model.AddToCartModel
+import kotlinx.coroutines.flow.Flow
 
-class AddToCartrepository {
+interface AddToCartRepository {
+    fun addItemToCart(item: AddToCartModel, onComplete: (Boolean) -> Unit)
 
-    private val auth = FirebaseAuth.getInstance()
-    private val database = FirebaseDatabase.getInstance()
+    fun getCartItems(): Flow<List<AddToCartModel>>
 
-    // Correct syntax for userId getter
-    private val userId: String
-        get() = auth.currentUser?.uid ?: ""
+    fun updateQuantity(itemId: String, newQty: Int)
 
-    // Reference to user's cart in Firebase Realtime Database
-    private fun cartRef(): DatabaseReference {
-        return database.getReference("carts").child(userId)
-    }
+    fun deleteItem(itemId: String)
 
-    // Save entire cart list to Firebase
-    fun syncCart(cartItems: List<CartItem>, onComplete: ((Boolean) -> Unit)? = null) {
-        cartRef().setValue(cartItems)
-            .addOnSuccessListener { onComplete?.invoke(true) }
-            .addOnFailureListener { onComplete?.invoke(false) }
-    }
-
-    // Remove specific items from cart in Firebase
-    fun removeItems(items: List<CartItem>, onComplete: ((Boolean) -> Unit)? = null) {
-        cartRef().get().addOnSuccessListener { snapshot ->
-            // Deserialize current cart items
-            val currentItems = snapshot.children.mapNotNull { it.getValue(CartItem::class.java) }
-
-            // Filter out items to remove by matching IDs
-            val updatedList = currentItems.filter { currentItem ->
-                items.none { it.id == currentItem.id }
-            }
-
-            // Update Firebase with filtered list
-            cartRef().setValue(updatedList)
-                .addOnSuccessListener { onComplete?.invoke(true) }
-                .addOnFailureListener { onComplete?.invoke(false) }
-        }.addOnFailureListener {
-            onComplete?.invoke(false)
-        }
-    }
+    fun isValidOffer(originalPrice: Double, offeredPrice: Double): Boolean
 }
