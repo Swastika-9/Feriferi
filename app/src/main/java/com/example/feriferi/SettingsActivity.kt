@@ -1,4 +1,4 @@
-package com.example.feriferi.view
+package com.example.feriferi
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

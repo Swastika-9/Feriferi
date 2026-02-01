@@ -16,10 +16,9 @@ class UserRepoImpl : UserRepository {
 
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseDatabase.getInstance()
-    private val usersRef = db.getReference("Users") // Points to "Users" node
+    private val usersRef = db.getReference("Users")
     private val usernamesRef = db.getReference("Usernames")
 
-    // --- REGISTER ---
     override suspend fun registerUser(
         email: String,
         password: String,

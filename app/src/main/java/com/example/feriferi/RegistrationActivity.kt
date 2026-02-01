@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import com.example.feriferi.R
 import com.example.feriferi.model.UserModel
 import com.example.feriferi.repository.UserRepoImpl
+import com.example.feriferi.repository.UserRepository
 import com.example.feriferi.ui.theme.*
 import com.example.feriferi.viewmodel.UserViewModel
 
@@ -57,7 +58,7 @@ class RegistrationActivity : ComponentActivity() {
 
 @Composable
 fun RegisterScreen() {
-    val userViewModel = remember { UserViewModel(UserRepoImpl()) }
+    val repository: UserRepository = UserRepoImpl()
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -94,7 +95,6 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            // FULL NAME
             OutlinedTextField(
                 value = fullName,
                 onValueChange = { fullName = it },
@@ -114,7 +114,6 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            // EMAIL
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -154,7 +153,6 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            // PASSWORD
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -168,8 +166,8 @@ fun RegisterScreen() {
                     IconButton(onClick = { visibility = !visibility }) {
                         Icon(
                             painter = if (visibility)
-                                painterResource(R.drawable.baseline_visibility_off_24)
-                            else painterResource(R.drawable.baseline_visibility_24),
+                                painterResource(R.drawable.baseline_visibility_24)
+                            else painterResource(R.drawable.baseline_visibility_off_24),
                             contentDescription = null,
                             tint = TextBrown
                         )
@@ -187,7 +185,7 @@ fun RegisterScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ROLE SELECTION
+            // ROLE SELECTION (Admin Hidden)
             Text(
                 text = "Choose your role",
                 color = TextBrown,
@@ -257,10 +255,10 @@ fun RegisterScreen() {
                         fullName = fullName,
                         email = email,
                         role = selectedRole,
-                        username = username  // ← USERNAME INCLUDED
+                        username = username
                     )
 
-                    userViewModel.registerUser(
+                    UserViewModel(repository).registerUser(
                         email = email,
                         user = user,
                         password = password,

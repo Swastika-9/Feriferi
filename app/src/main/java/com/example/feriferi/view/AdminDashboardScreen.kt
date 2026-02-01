@@ -35,12 +35,11 @@ fun AdminDashboardScreen(
     isLoading: Boolean,
     viewModel: AdminDashboardViewModel
 ) {
-    // 1. BRAND COLORS
+
     val AdminBrown = Color(0xFF8D736B)
     val AdminBgWhite = Color(0xFFFFFFFF)
     val AdminGray = Color(0xFF757575)
 
-    // Tab 0: Home, 1: Messages, 2: Settings, 3: User List, 4: Product List
     var selectedTab by remember { mutableStateOf(0) }
 
     Scaffold(
@@ -54,12 +53,12 @@ fun AdminDashboardScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* Open Drawer */ }) {
+                    IconButton(onClick = {  }) {
                         Icon(Icons.Default.Menu, null, tint = AdminBrown)
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* Notifications */ }) {
+                    IconButton(onClick = {  }) {
                         Icon(Icons.Default.NotificationsNone, null, tint = AdminBrown)
                     }
                 },

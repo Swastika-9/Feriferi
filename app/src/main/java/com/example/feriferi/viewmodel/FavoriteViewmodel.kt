@@ -1,18 +1,20 @@
-package com.example.feriferi
+package com.example.feriferi.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.feriferi.view.FavoriteItem
+import com.example.feriferi.model.LikedProducts
+import com.example.feriferi.repository.FavoriteRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class FavoriteViewModel : ViewModel() {
+
+class FavouriteViewModel : ViewModel() {
 
     private val repository = FavoriteRepository()
 
-    private val _favorites = MutableStateFlow<List<FavoriteItem>>(emptyList())
-    val favorites: StateFlow<List<FavoriteItem>> = _favorites
+    private val _favorites = MutableStateFlow<List<LikedProducts>>(emptyList())
+    val favorites: StateFlow<List<LikedProducts>> = _favorites
 
     init {
         loadFavorites()
