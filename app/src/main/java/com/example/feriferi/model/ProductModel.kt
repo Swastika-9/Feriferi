@@ -2,6 +2,7 @@ package com.example.feriferi.model
 
 data class ProductModel(
     val id: String = "",
+    val sellerId: String = "",
     val name: String = "",
     val price: Double = 0.0,
     val originalPrice: Double? = null,
@@ -18,7 +19,6 @@ data class ProductModel(
     val tag: String? = null,
     val gender: String? = null
 ) {
-
     val status: String
         get() = if (quantity > 0) "Available" else "Sold Out"
 }

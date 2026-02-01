@@ -14,8 +14,8 @@ val BackgroundColor = Color(0xFFFFF6EB)  // screen background
 val TextFieldColor = Color(0xFFFDEDDC)   // text field background
 val ButtonColor = Color(0xFF6B4F4B)      // dark brown buttons
 val TextBrown = Color(0xFF6B4F4B)        // brown text
-val WhiteText = Color(0xFFFFFFFF)        // white text for buttons
-
+val WhiteText = Color(0xFFFFFFFF)
 val SoftPink = Color(0xFFFFF1F4)
 val CardPink = Color(0xFFFFE9EE)
 val OffWhiteCard = Color(0xFFFFFAFA)
+

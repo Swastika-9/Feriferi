@@ -1,10 +1,11 @@
 package com.example.feriferi.model
 
 data class UserModel(
-    var userId: String = "",
-    var fullName: String = "",
-    var email: String = "",
-    var username: String = "",
-    var role: String = "",
+    val userId: String = "",
+    val fullName: String = "",
+    val email: String = "",
+    val role: String = "",
+    val phoneNumber: String = "",
     val profileImageUrl: String = "",
+    val username: String = ""
 )

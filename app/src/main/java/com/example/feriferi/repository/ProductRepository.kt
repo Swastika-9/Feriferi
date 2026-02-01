@@ -5,12 +5,13 @@ import com.example.feriferi.model.ProductModel
 
 interface ProductRepo {
 
+    // ADD PRODUCT
     fun addProduct(
         model: ProductModel,
         callback: (success: Boolean, message: String) -> Unit
     )
 
-
+    // UPDATE PRODUCT
     fun updateProduct(
         model: ProductModel,
         callback: (success: Boolean, message: String) -> Unit

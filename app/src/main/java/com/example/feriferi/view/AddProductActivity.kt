@@ -1,77 +1,44 @@
 package com.example.feriferi.view
 
-import android.Manifest
-import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import com.cloudinary.android.MediaManager
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState // You need this import!
+import androidx.lifecycle.viewmodel.compose.viewModel // You need this import!
+import com.example.feriferi.ui.theme.FeriferiTheme
 import com.example.feriferi.viewmodel.AddProductViewModel
 
 class AddProductActivity : ComponentActivity() {
-
-    private val viewModel: AddProductViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
-        try {
-            MediaManager.get()
-        } catch (e: Exception) {
-            val config = mapOf(
-                "cloud_name" to "dizcwwcat",
-                "api_key" to "934843177742589",
-                "api_secret" to "txri4GAHnxok5sBY0pB2gdiGMw4"
-            )
-            MediaManager.init(this, config)
-        }
-
         setContent {
-            val isUploading by viewModel.isUploading.observeAsState(initial = false)
-            val statusMessage by viewModel.statusMessage.observeAsState(initial = "")
+            FeriferiTheme {
+                // 1. Initialize the ViewModel
+                val addProductViewModel: AddProductViewModel = viewModel()
 
-            val permissionLauncher = rememberLauncherForActivityResult(
-                ActivityResultContracts.RequestMultiplePermissions()
-            ) { permissions ->
-                val cameraGranted = permissions[Manifest.permission.CAMERA] == true
-                if (!cameraGranted) {
-                    Toast.makeText(this, "Camera access is recommended for product photos", Toast.LENGTH_SHORT).show()
-                }
-            }
+                // 2. Observe the state from ViewModel
+                val isUploading by addProductViewModel.isUploading.observeAsState(initial = false)
+                val statusMessage by addProductViewModel.statusMessage.observeAsState()
 
-            LaunchedEffect(Unit) {
-                val permissionsNeeded = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    arrayOf(Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES)
-                } else {
-                    arrayOf(Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE)
-                }
-                permissionLauncher.launch(permissionsNeeded)
-            }
-
-            LaunchedEffect(statusMessage) {
-                if (statusMessage.isNotBlank()) {
-                    Toast.makeText(this@AddProductActivity, statusMessage, Toast.LENGTH_SHORT).show()
-                    if (statusMessage == "Product Added Successfully!") {
-                        finish()
+                // 3. Show Toast when status changes
+                LaunchedEffect(statusMessage) {
+                    statusMessage?.let {
+                        Toast.makeText(this@AddProductActivity, it, Toast.LENGTH_SHORT).show()
+                        if (it == "Product Added Successfully!") finish()
                     }
                 }
-            }
 
-            AddProductScreen(
-                onBack = { finish() },
-                onUpload = { product, uris ->
-                    viewModel.uploadProductWithImages(product, uris)
-                },
-                isUploading = isUploading
-            )
+                AddProductScreen(
+                    onBack = { finish() },
+                    isUploading = isUploading,
+                    onUpload = { product, uris ->
+                        // 4. Trigger the sequential Cloudinary upload
+                        addProductViewModel.uploadProductWithImages(product, uris)
+                    }
+                )
+            }
         }
     }
 }

@@ -1,49 +1,21 @@
 package com.example.feriferi.repository
 
+import android.net.Uri
 import com.example.feriferi.model.UserModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 
-class UserRepository {
+interface UserRepository {
+    // Auth & Database
+    suspend fun registerUser(email: String, password: String, user: UserModel): Pair<Boolean, String>
+    suspend fun loginUser(email: String, password: String): Pair<Boolean, String>
+    suspend fun getCurrentUser(): UserModel?
+    fun logout()
 
-    private val auth = FirebaseAuth.getInstance()
-    private val database = FirebaseDatabase.getInstance().reference
+    // Images
+    suspend fun uploadProfileImage(imageUri: Uri): String?
 
-    fun registerUser(
-        email: String,
-        password: String,
-        user: UserModel,
-        onSuccess: () -> Unit,
-        onFailure: (String) -> Unit
-    ) {
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-
-                if (!task.isSuccessful) {
-                    onFailure(task.exception?.message ?: "Auth failed")
-                    return@addOnCompleteListener
-                }
-
-                val uid = auth.currentUser?.uid
-                if (uid == null) {
-                    onFailure("UID is null")
-                    return@addOnCompleteListener
-                }
-
-                val userData = user.copy(
-                    userId = uid,
-                    email = email
-                )
-
-                database.child("users")
-                    .child(uid)
-                    .setValue(userData)
-                    .addOnSuccessListener {
-                        onSuccess()
-                    }
-                    .addOnFailureListener {
-                        onFailure(it.message ?: "Database write failed")
-                    }
-            }
-    }
+    // Management (Admin)
+    fun verifyUser(uid: String, onSuccess: () -> Unit, onError: (String) -> Unit)
+    fun removeUser(uid: String, onSuccess: () -> Unit, onError: (String) -> Unit)
+    fun changePassword(newPassword: String, onSuccess: () -> Unit, onError: (String) -> Unit)
+    fun updateSellerProfile(uid: String, updates: Map<String, Any>, callback: (Boolean, String) -> Unit)
 }

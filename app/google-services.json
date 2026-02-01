@@ -1,27 +1,45 @@
 {
   "project_info": {
-    "project_number": "615508509670",
-    "firebase_url": "https://feriferi-5fa32-default-rtdb.firebaseio.com",
-    "project_id": "feriferi-5fa32",
-    "storage_bucket": "feriferi-5fa32.firebasestorage.app"
+    "project_number": "942110354518",
+    "firebase_url": "https://feriferi-default-rtdb.firebaseio.com",
+    "project_id": "feriferi",
+    "storage_bucket": "feriferi.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:615508509670:android:d1704f236d6e96bdd24c27",
+        "mobilesdk_app_id": "1:942110354518:android:5faec2b455ec27e7991ff7",
         "android_client_info": {
           "package_name": "com.example.feriferi"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "942110354518-1tgeda5eijk76evgn8j2vcbu14ht4p0d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.feriferi",
+            "certificate_hash": "5c117588817ad757fe3027f5535b23febf5f0ef9"
+          }
+        },
+        {
+          "client_id": "942110354518-o968brh1lacp86c2e7g3frdf74trvu1p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyCUnj7pik6EVr2a10iQe0LKLcnu_76hwPg"
+          "current_key": "AIzaSyBhR8epXoSCnVnvv9PW7PukexqNAcYXiTA"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "942110354518-o968brh1lacp86c2e7g3frdf74trvu1p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

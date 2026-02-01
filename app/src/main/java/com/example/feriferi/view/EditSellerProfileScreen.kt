@@ -1,5 +1,10 @@
 package com.example.feriferi.view
 
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -13,27 +18,41 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.feriferi.R
 import com.example.feriferi.viewmodel.SellerProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditSellerProfileScreen(
-    viewModel: SellerProfileViewModel,
+    viewModel: SellerProfileViewModel = viewModel(),
     onBack: () -> Unit,
     onNavigateToMessages: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     val seller by viewModel.seller.collectAsState()
 
-    // Local UI State for text fields
+    // --- STATE MANAGEMENT ---
     var nameState by remember(seller) { mutableStateOf(seller.name) }
+    var phoneState by remember(seller) { mutableStateOf(seller.phone) }
     var usernameState by remember(seller) { mutableStateOf(seller.username) }
+
+    // Image State
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    // Image Picker Launcher
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri -> selectedImageUri = uri }
+    )
 
     // Brand Colors
     val pheriBrown = Color(0xFF8D736B)
@@ -65,7 +84,7 @@ fun EditSellerProfileScreen(
                 tonalElevation = 0.dp
             ) {
                 NavigationBarItem(
-                    selected = true, // Highlighted because we are in a sub-section of Home/Profile
+                    selected = true,
                     onClick = onBack,
                     icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
                     label = { Text("Home") },
@@ -118,24 +137,43 @@ fun EditSellerProfileScreen(
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .padding(top = 20.dp),
+                    .padding(top = 20.dp)
+                    .clickable {
+                        photoPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
                 contentAlignment = Alignment.BottomEnd
             ) {
-                Image(
-                    painter = painterResource(id = seller.profileImage),
+                val model = if (selectedImageUri != null) {
+                    selectedImageUri
+                } else {
+                    if (seller.profileImageUrl is String && (seller.profileImageUrl as String).isNotEmpty()) {
+                        seller.profileImageUrl
+                    } else {
+                        R.drawable.seller_profile
+                    }
+                }
+
+                AsyncImage(
+                    model = model,
                     contentDescription = "Profile Image",
                     modifier = Modifier
                         .size(150.dp)
                         .clip(CircleShape)
                         .border(1.dp, Color.LightGray, CircleShape),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(R.drawable.seller_profile),
+                    error = painterResource(R.drawable.seller_profile)
                 )
-                // Small Edit Icon Overlay
+
                 Surface(
                     shape = CircleShape,
                     color = Color.White,
                     shadowElevation = 2.dp,
-                    modifier = Modifier.size(32.dp).offset(x = (-4).dp, y = (-4).dp)
+                    modifier = Modifier
+                        .size(32.dp)
+                        .offset(x = (-4).dp, y = (-4).dp)
                 ) {
                     Icon(
                         Icons.Default.Edit,
@@ -148,11 +186,17 @@ fun EditSellerProfileScreen(
 
             // --- Choose File Button ---
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
                 horizontalArrangement = Arrangement.End
             ) {
                 Button(
-                    onClick = { /* Handle File Picker */ },
+                    onClick = {
+                        photoPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = pheriBrown),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
@@ -165,38 +209,47 @@ fun EditSellerProfileScreen(
 
             // --- Form Fields ---
             PheriLabelledInput(label = "Full Name", value = nameState) { nameState = it }
+
             PheriLabelledInput(label = "Username", value = usernameState) { usernameState = it }
-            PheriLabelledInput(label = "Phone Number", value = "970000000") { /* Static for now */ }
 
-            Spacer(modifier = Modifier.height(24.dp))
-            Text("Change Password", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            PheriLabelledInput(label = "Phone Number", value = phoneState) { phoneState = it }
 
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    PheriLabelledInput("Current Password", "xxxxx") {}
-                }
-                Box(modifier = Modifier.weight(1f)) {
-                    PheriLabelledInput("New Password", "xxxxxx") {}
-                }
-            }
+            // --- Password Section REMOVED Here ---
 
             // --- Save Button ---
             Button(
                 onClick = {
-                    viewModel.saveSellerProfile(nameState, usernameState)
-                    onBack()
+                    if (isLoading) return@Button
+                    isLoading = true
+
+                    viewModel.updateProfile(
+                        uid = seller.id,
+                        name = nameState,
+                        username = usernameState,
+                        phone = phoneState,
+                        newImageUri = selectedImageUri,
+                        currentImageUrl = seller.profileImageUrl.toString()
+                    ) { success, message ->
+                        isLoading = false
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        if (success) {
+                            onBack()
+                        }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 40.dp, bottom = 20.dp)
                     .height(55.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = pheriBrown),
-                shape = RoundedCornerShape(10.dp)
+                shape = RoundedCornerShape(10.dp),
+                enabled = !isLoading
             ) {
-                Text("Done", fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                if (isLoading) {
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                } else {
+                    Text("Done", fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
@@ -209,7 +262,9 @@ fun PheriLabelledInput(label: String, value: String, onValueChange: (String) -> 
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth().height(52.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
             shape = RoundedCornerShape(4.dp),
             singleLine = true,
             colors = TextFieldDefaults.colors(
@@ -218,13 +273,4 @@ fun PheriLabelledInput(label: String, value: String, onValueChange: (String) -> 
             )
         )
     }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun EditProfilePreview() {
-    EditSellerProfileScreen(
-        viewModel = SellerProfileViewModel(), // Fixed: Instantiate directly for preview
-        onBack = {}
-    )
 }

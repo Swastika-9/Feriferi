@@ -69,6 +69,7 @@ fun LoginScreen() {
                 .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Spacer(modifier = Modifier.height(40.dp))
 
             Text(
@@ -114,9 +115,10 @@ fun LoginScreen() {
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
-                            painter = if (passwordVisible) painterResource(R.drawable.baseline_visibility_24) else
-                                painterResource(R.drawable.baseline_visibility_off_24),
-
+                            painter = if (passwordVisible)
+                                painterResource(R.drawable.baseline_visibility_off_24)
+                            else
+                                painterResource(R.drawable.baseline_visibility_24),
                             contentDescription = null,
                             tint = TextBrown
                         )
@@ -141,6 +143,7 @@ fun LoginScreen() {
                     color = Color(0xFF78350F),
                     fontSize = 14.sp,
                     modifier = Modifier.clickable {
+                        if (!isPreview) activity?.startActivity(Intent(activity, ForgotPasswordActivity::class.java))
 
                         context.startActivity(Intent(context, ForgotPasswordActivity::class.java))
                     }

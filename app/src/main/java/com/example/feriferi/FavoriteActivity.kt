@@ -1,4 +1,4 @@
-package com.example.feriferi
+package com.example.feriferi.view
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -36,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.feriferi.R
 
 
 class FavouriteActivity : ComponentActivity() {

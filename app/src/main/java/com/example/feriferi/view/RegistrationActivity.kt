@@ -250,6 +250,7 @@ fun RegisterScreen() {
                         return@Button
                     }
 
+                    // Create user with username included
                     val user = UserModel(
                         fullName = fullName,
                         email = email,

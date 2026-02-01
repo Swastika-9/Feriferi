@@ -8,7 +8,8 @@ import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
 import com.example.feriferi.model.ProductModel
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore // Changed to Firestore
 
 class AddProductViewModel : ViewModel() {
 
@@ -20,7 +21,7 @@ class AddProductViewModel : ViewModel() {
 
     /**
      * Uploads multiple images to Cloudinary sequentially.
-     * Once all are done, saves the product to Firebase.
+     * Once all are done, saves the product to Firestore.
      */
     fun uploadProductWithImages(product: ProductModel, imageUris: List<Uri>) {
         if (imageUris.size < 3) {
@@ -37,6 +38,7 @@ class AddProductViewModel : ViewModel() {
             _statusMessage.postValue("Uploading image ${currentUploadIndex + 1}/${imageUris.size}...")
 
             MediaManager.get().upload(uri)
+                .unsigned("feripheri_preset") // <--- MUST MATCH YOUR CLOUDINARY PRESET
                 .option("folder", "products")
                 .callback(object : UploadCallback {
                     override fun onStart(requestId: String?) {}
@@ -50,8 +52,8 @@ class AddProductViewModel : ViewModel() {
                         if (currentUploadIndex < imageUris.size) {
                             uploadNext() // Recursive call for next image
                         } else {
-                            // All images uploaded, save to Firebase
-                            saveToFirebase(product.copy(imageUrls = uploadedUrls))
+                            // All images uploaded, save to Firestore
+                            saveToFirestore(product.copy(imageUrls = uploadedUrls))
                         }
                     }
 
@@ -67,19 +69,36 @@ class AddProductViewModel : ViewModel() {
         uploadNext()
     }
 
-    private fun saveToFirebase(product: ProductModel) {
-        val dbRef = FirebaseDatabase.getInstance().getReference("Products")
-        val productId = dbRef.push().key ?: ""
-        val finalProduct = product.copy(id = productId)
+    private fun saveToFirestore(product: ProductModel) {
+        val db = FirebaseFirestore.getInstance() // Use Firestore instance
+        val currentUser = FirebaseAuth.getInstance().currentUser
 
-        dbRef.child(productId).setValue(finalProduct)
+        // Ensure we have a valid user
+        if (currentUser == null) {
+            _isUploading.postValue(false)
+            _statusMessage.postValue("Error: User not logged in")
+            return
+        }
+
+        // Generate a new unique ID for the product
+        val newProductRef = db.collection("products").document()
+        val productId = newProductRef.id
+
+        // Create the final product object with ID and SellerID
+        val finalProduct = product.copy(
+            id = productId,
+            sellerId = currentUser.uid // Ensure the seller ID is correct
+        )
+
+        // Save to the "products" collection in Firestore
+        newProductRef.set(finalProduct)
             .addOnSuccessListener {
                 _isUploading.postValue(false)
                 _statusMessage.postValue("Product Added Successfully!")
             }
             .addOnFailureListener { e ->
                 _isUploading.postValue(false)
-                _statusMessage.postValue("Firebase Error: ${e.message}")
+                _statusMessage.postValue("Firestore Error: ${e.message}")
             }
     }
 }

@@ -1,15 +1,24 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.feriferi.view
 
-import androidx.compose.foundation.Image
+import android.app.Activity
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,133 +26,104 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import com.example.feriferi.R
 import com.example.feriferi.model.ProductModel
 import com.example.feriferi.model.Seller
-import coil.compose.rememberAsyncImagePainter
-import com.example.feriferi.R
 import com.example.feriferi.viewmodel.EditProductViewModel
 import com.example.feriferi.viewmodel.SellerProfileViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SellerDashboardScreen(onNavigateToAddProduct: () -> Unit) {
+fun SellerDashboardScreen(
+    onNavigateToAddProduct: () -> Unit
+) {
+    val AdminBrown = Color(0xFF8D736B)
+    val AdminBgWhite = Color(0xFFFFFFFF)
+    val context = LocalContext.current
+    val activity = context as? Activity
 
-    val adminBrown = Color(0xFF8D736B)
-    val adminBgWhite = Color(0xFFFFFFFF)
-    val adminGray = Color(0xFF757575)
+    var selectedTab by remember { mutableIntStateOf(0) }
 
-    var selectedTab by remember { mutableIntStateOf(0)}
+    // State to toggle screens locally
     var showEditProfile by remember { mutableStateOf(false) }
     var editingProduct by remember { mutableStateOf<ProductModel?>(null) }
 
     val sellerProfileViewModel: SellerProfileViewModel = viewModel()
     val editProductViewModel: EditProductViewModel = viewModel()
 
+    // --- 1. COLLECT REAL DATA FROM VIEWMODEL ---
     val seller by sellerProfileViewModel.seller.collectAsState()
+    val products by sellerProfileViewModel.products.collectAsState()
 
-    var products by remember { mutableStateOf(sampleProducts().toMutableList()) }
-
+    // --- NAVIGATION LOGIC ---
     if (showEditProfile) {
+        // UPDATED: Now calls your actual EditProfileScreen
         EditSellerProfileScreen(
-            viewModel = sellerProfileViewModel,
             onBack = { showEditProfile = false }
         )
     } else if (editingProduct != null) {
-        // Initialize the ViewModel with the selected product
         LaunchedEffect(editingProduct) {
-            editingProduct?.let { editProductViewModel.initializeProduct(it) }
+            editingProduct?.let { p -> editProductViewModel.initializeProduct(p) }
         }
-
-        EditProductScreen(
-            viewModel = editProductViewModel,
-            onBack = {
-                // When coming back, we might want to update the local list with changes
-                val updatedProduct = editProductViewModel.productState
-                products = products.map { if (it.id == updatedProduct.id) updatedProduct else it }.toMutableList()
-                editingProduct = null
-            }
-        )
+        PlaceholderScreen("Edit Product ${editingProduct?.name}", onBack = { editingProduct = null })
     } else {
+        // --- DASHBOARD CONTENT ---
         Scaffold(
-            containerColor = adminBgWhite,
+            containerColor = AdminBgWhite,
             topBar = {
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            text = "फेरिPheri",
-                            style = TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Bold, color = adminBrown)
+                            "फेरिPheri",
+                            style = TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Bold, color = AdminBrown)
                         )
                     },
                     navigationIcon = {
-                        IconButton(onClick = { /* Open Drawer */ }) {
-                            Icon(Icons.Default.Menu, null, tint = adminBrown)
+                        IconButton(onClick = { /* TODO: Open Side Drawer */ }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = AdminBrown)
                         }
                     },
                     actions = {
-                        IconButton(onClick = { /* Notifications */ }) {
-                            Icon(Icons.Default.NotificationsNone, null, tint = adminBrown)
+                        IconButton(onClick = { /* TODO: Show Notifications */ }) {
+                            Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = AdminBrown)
                         }
-                    },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = adminBgWhite)
+                    }
                 )
             },
             bottomBar = {
-                NavigationBar(
-                    containerColor = Color.White,
-                    tonalElevation = 0.dp
-                ) {
+                NavigationBar(containerColor = Color.White) {
                     NavigationBarItem(
                         selected = selectedTab == 0,
                         onClick = { selectedTab = 0 },
-                        icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                        label = { Text("Home") },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = adminBrown,
-                            selectedTextColor = adminBrown,
-                            indicatorColor = adminBrown.copy(alpha = 0.1f)
-                        )
+                        icon = { Icon(Icons.Default.Home, null) },
+                        label = { Text("Home") }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
-                        icon = { Icon(Icons.Default.Email, contentDescription = "Messages") },
-                        label = { Text("Messages") },
-                        colors = NavigationBarItemDefaults.colors(selectedIconColor = adminBrown, selectedTextColor = adminBrown)
-                    )
-                    NavigationBarItem(
-                        selected = selectedTab == 2,
-                        onClick = { selectedTab = 2 },
-                        icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                        label = { Text("Settings") },
-                        colors = NavigationBarItemDefaults.colors(selectedIconColor = adminBrown, selectedTextColor = adminBrown)
+                        onClick = { /* Navigate to Chat */ },
+                        icon = { Icon(Icons.Default.Chat, null) },
+                        label = { Text("Chat") }
                     )
                 }
             }
         ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
-                when (selectedTab) {
-                    0 -> HomeContent(
+                if (selectedTab == 0) {
+                    HomeContent(
                         seller = seller,
                         products = products,
-                        adminBrown = adminBrown,
-                        adminGray = adminBrown,
-                        onEditProfile = { showEditProfile = true },
+                        adminBrown = AdminBrown,
+                        onEditProfile = { showEditProfile = true }, // Triggers the screen switch
                         onAddProduct = onNavigateToAddProduct,
-                        onEditProduct = { productId ->
-                            editingProduct = products.find { it.id == productId }
-                        },
-                        onDeleteProduct = { productId ->
-                            products = products.filter { it.id != productId }.toMutableList()
-                        }
+                        onEditProduct = { id -> editingProduct = products.find { it.id == id } }
                     )
-                    1 -> PlaceholderScreen("Messages", { selectedTab = 0 })
-                    2 -> PlaceholderScreen("Settings", { selectedTab = 0 })
                 }
             }
         }
@@ -155,228 +135,174 @@ fun HomeContent(
     seller: Seller,
     products: List<ProductModel>,
     adminBrown: Color,
-    adminGray: Color,
     onEditProfile: () -> Unit,
     onAddProduct: () -> Unit,
-    onEditProduct: (String) -> Unit,
-    onDeleteProduct: (String) -> Unit
+    onEditProduct: (String) -> Unit
 ) {
-    Column(
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Profile Section
-        Box(contentAlignment = Alignment.BottomEnd) {
-            Image(
-                painter = if (seller.profileImageUrl != null)
-                    rememberAsyncImagePainter(seller.profileImageUrl)
-                else
-                    painterResource(seller.profileImage),
-                contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, adminBrown, CircleShape)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(seller.name, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        Text(seller.username, color = adminGray)
-        Text("Products sold: ${seller.productsSold}", color = adminGray, fontSize = 14.sp)
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 20.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Button(
-                onClick = onEditProfile,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = adminBrown)
+        item(span = { GridItemSpan(3) }) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(bottom = 16.dp)
             ) {
-                Text("Edit Profile", color = Color.White)
-            }
-            Button(
-                onClick = onAddProduct,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = adminBrown)
-            ) {
-                Text("Add Product", color = Color.White)
-            }
-        }
+                Spacer(modifier = Modifier.height(20.dp))
 
-        Spacer(modifier = Modifier.height(32.dp))
+                Text(
+                    text = seller.name,
+                    style = TextStyle(
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Serif,
+                        color = Color(0xFF4A4A4A)
+                    )
+                )
 
-        Text(
-            text = "Recently Added",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-        )
+                Text(
+                    text = seller.username,
+                    style = TextStyle(fontSize = 16.sp, color = Color.Gray, fontFamily = FontFamily.Serif)
+                )
 
-        Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Since 2021",
+                    style = TextStyle(fontSize = 14.sp, color = Color.Gray, fontFamily = FontFamily.Serif)
+                )
+                Text(
+                    text = "${seller.productsSold} products sold",
+                    style = TextStyle(fontSize = 14.sp, color = Color.Gray, fontFamily = FontFamily.Serif)
+                )
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            products.chunked(2).forEach { rowProducts ->
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // --- FIXED IMAGE LOGIC HERE ---
+                val imageModel = if (seller.profileImageUrl is String && (seller.profileImageUrl as String).isEmpty()) {
+                    R.drawable.seller_profile
+                } else {
+                    seller.profileImageUrl ?: R.drawable.seller_profile
+                }
+
+                AsyncImage(
+                    model = imageModel,
+                    contentDescription = "Profile Image",
+                    modifier = Modifier
+                        .size(160.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, Color.LightGray, CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    rowProducts.forEach { product ->
-                        ProductCard(
-                            product = product,
-                            accentColor = adminBrown,
-                            onEdit = { onEditProduct(product.id) },
-                            onDelete = { onDeleteProduct(product.id) },
-                            modifier = Modifier.weight(1f)
-                        )
+                    Button(
+                        onClick = onEditProfile,
+                        colors = ButtonDefaults.buttonColors(containerColor = adminBrown),
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp)
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Edit profile")
                     }
-                    if (rowProducts.size == 1) {
-                        Spacer(modifier = Modifier.weight(1f))
+
+                    Button(
+                        onClick = onAddProduct,
+                        colors = ButtonDefaults.buttonColors(containerColor = adminBrown),
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 8.dp)
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Add product")
                     }
                 }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Text(
+                    text = "Recently added",
+                    modifier = Modifier.fillMaxWidth(),
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF4A4A4A)
+                    ),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Start
+                )
             }
         }
-        Spacer(modifier = Modifier.height(24.dp))
+
+        items(products) { product ->
+            ProductGridItem(product, onEditProduct)
+        }
     }
 }
 
 @Composable
-fun ProductCard(
-    product: ProductModel,
-    accentColor: Color,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+fun ProductGridItem(product: ProductModel, onEdit: (String) -> Unit) {
+    Column(horizontalAlignment = Alignment.Start) {
+        AsyncImage(
+            model = product.imageUrls.firstOrNull() ?: R.drawable.placeholder_image,
+            contentDescription = product.name,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(0.8f)
+                .clip(RoundedCornerShape(8.dp)),
+            contentScale = ContentScale.Crop
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = product.name,
+            style = TextStyle(fontSize = 12.sp, color = Color.Gray),
+            maxLines = 1
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable { onEdit(product.id) }
         ) {
-            val imagePainter = if (product.imageUrls.isNotEmpty()) {
-                rememberAsyncImagePainter(product.imageUrls[0])
-            } else {
-                painterResource(R.drawable.shoes)
-            }
-
-            Image(
-                painter = imagePainter,
-                contentDescription = product.name,
-                modifier = Modifier
-                    .size(110.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
+            Icon(
+                imageVector = Icons.Default.Edit,
+                contentDescription = "Edit",
+                modifier = Modifier.size(12.dp),
+                tint = Color.Black
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
+            Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = product.name,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                fontSize = 16.sp
+                text = "Edit",
+                style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             )
-
-            // RESTORED: Detailed Subtitle
-            Text(
-                text = "${product.category} | ${product.brand ?: "Generic"}",
-                fontSize = 11.sp,
-                color = Color.Gray,
-                maxLines = 1
-            )
-
-            Text(
-                text = "Rs. ${product.price}",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = accentColor
-            )
-
-            // RESTORED: Times Worn Tag
-            if (!product.tag.isNullOrEmpty()) {
-                Surface(
-                    color = Color(0xFFF5F5F5),
-                    shape = RoundedCornerShape(4.dp),
-                    modifier = Modifier.padding(top = 2.dp)
-                ) {
-                    Text(
-                        text = "Worn: ${product.tag}",
-                        fontSize = 10.sp,
-                        color = Color.DarkGray,
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                    )
-                }
-            }
-
-            Text(
-                text = product.status,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (product.quantity > 0) Color(0xFF4CAF50) else Color.Red
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Text(
-                    text = "Edit",
-                    color = Color(0xFF6A493A),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { onEdit() }
-                )
-                Text(
-                    text = "Delete",
-                    color = Color.Red,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { onDelete() }
-                )
-            }
         }
     }
 }
 
 @Composable
 fun PlaceholderScreen(title: String, onBack: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(title, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(text = title, style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onBack, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8D736B))) {
-                Text("Go Home")
+            Button(onClick = onBack) {
+                Text("Go Back")
             }
         }
     }
 }
-
-fun sampleProducts() = listOf(
-    ProductModel(id = "1", name = "Sandal", price = 1200.0, category = "Footwear", brand = "Local", tag = "2 times", quantity = 5),
-    ProductModel(id = "2", name = "Floral Dress", price = 2500.0, category = "Clothing", brand = "Zara", tag = "New", quantity = 2),
-    ProductModel(id = "3", name = "Cotton Shirt", price = 2200.0, category = "Clothing", brand = "H&M", tag = "5 times", quantity = 0),
-    ProductModel(id = "4", name = "Sports Shoes", price = 3000.0, category = "Footwear", brand = "Nike", tag = "10 times", quantity = 10),
-    ProductModel(id = "5", name = "Luxury Bag", price = 1500.0, category = "Accessories", brand = "Gucci", tag = "New", quantity = 1)
-)
