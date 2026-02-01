@@ -9,11 +9,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
@@ -28,16 +29,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
-import androidx.compose.foundation.lazy.items
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
+
+// Project Imports
 import com.example.feriferi.R
 import com.example.feriferi.model.LikedProducts
 import com.example.feriferi.model.ProductModel
 import com.example.feriferi.repository.FavoriteRepository
 import com.example.feriferi.repository.ProductRepoImpl
-import com.example.feriferi.ui.theme.CardPink
-import com.example.feriferi.view.com.example.feriferi.view.SettingsScreen
+import com.example.feriferi.view.SettingsScreen
 
 private val SoftPink = Color(0xFFFFF1F4)
 private val OffWhiteCard = Color(0xFFFFFAFA)
@@ -174,7 +175,7 @@ fun DashboardBody() {
                     0 -> HomeScreen()
                     1 -> CartScreen()
                     2 -> MessageScreen()
-                    3 -> SettingsScreen()      // ✅ FROM SettingsScreen.kt
+                    3 -> SettingsScreen()
                     4 -> NotificationScreen()
                 }
             }
@@ -184,90 +185,24 @@ fun DashboardBody() {
 
 @Composable
 fun HomeScreen() {
-
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-
-        item {
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_search_24),
-                        contentDescription = "Search"
-                    )
-                },
-                placeholder = { Text("Search products") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp)
-            )
-        }
-
-        item { BannerSection() }
-
-        item {
-            Text(
-                "Shop by choice",
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = 12.dp)
-            )
-        }
-
-        item { HomeProductsSection() }
-    }
-}
-
-@Composable
-fun BannerSection() {
-
-    val banners = listOf(
-        R.drawable.banner1,
-        R.drawable.banner2,
-        R.drawable.banner3
-    )
-
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(banners) { banner ->
-            Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE9EE)), // Fixed: Using literal color to avoid conflict
-                modifier = Modifier
-                    .width(320.dp)
-                    .height(160.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = banner),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun HomeProductsSection() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    // Initialize Repositories
     val productRepo = remember { ProductRepoImpl() }
     val favoriteRepo = remember { FavoriteRepository() }
 
+    // State
     var products by remember { mutableStateOf<List<ProductModel>>(emptyList()) }
     val likedIds = remember { mutableStateListOf<String>() }
     var isLoading by remember { mutableStateOf(true) }
 
+    // Fetch Data
     LaunchedEffect(Unit) {
         scope.launch {
             try {
-
                 val favorites = favoriteRepo.getFavorites()
+                likedIds.clear()
                 likedIds.addAll(favorites.map { it.productId })
 
                 productRepo.getAllProduct { success, _, fetchedProducts ->
@@ -291,12 +226,49 @@ fun HomeProductsSection() {
             CircularProgressIndicator()
         }
     } else {
+        // --- CRASH FIX: Single LazyVerticalGrid handles everything ---
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+
+            // 1. Search Bar (Full Width)
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = {},
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_search_24),
+                            contentDescription = "Search"
+                        )
+                    },
+                    placeholder = { Text("Search products") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                )
+            }
+
+            // 2. Banner Section (Full Width)
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                BannerSection()
+            }
+
+            // 3. Section Title (Full Width)
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(
+                    "Shop by choice",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 12.dp)
+                )
+            }
+
+            // 4. Products Grid (2 Columns)
             items(products) { product ->
                 val isLiked = likedIds.contains(product.id)
 
@@ -323,7 +295,11 @@ fun HomeProductsSection() {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(product.name, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                text = product.name,
+                                fontWeight = FontWeight.SemiBold,
+                                maxLines = 1 // Prevent layout breaking
+                            )
 
                             IconButton(onClick = {
                                 scope.launch {
@@ -358,6 +334,38 @@ fun HomeProductsSection() {
 }
 
 @Composable
+fun BannerSection() {
+    val banners = listOf(
+        R.drawable.banner1,
+        R.drawable.banner2,
+        R.drawable.banner3
+    )
+
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        items(banners) { banner ->
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE9EE)),
+                modifier = Modifier
+                    .width(320.dp)
+                    .height(160.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = banner),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+    }
+}
+
+// --- Placeholder Screens ---
+
+@Composable
 fun CartScreen() =
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text("Cart Screen")
@@ -374,12 +382,6 @@ fun NotificationScreen() =
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text("Notifications")
     }
-
-data class Product(
-    val name: String,
-    val username: String,
-    val image: Int
-)
 
 @Preview(showBackground = true)
 @Composable

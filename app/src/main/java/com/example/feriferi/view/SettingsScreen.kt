@@ -1,6 +1,11 @@
-package com.example.feriferi.view.com.example.feriferi.view
+package com.example.feriferi.view
 
+import android.app.Activity
 import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -8,10 +13,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,16 +30,20 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.feriferi.R
 import com.example.feriferi.model.LikedProducts
 import com.example.feriferi.model.ProductModel
 import com.example.feriferi.repository.FavoriteRepository
 import com.example.feriferi.repository.ProductRepoImpl
-import com.example.feriferi.view.ItemDescriptionActivity
+import com.example.feriferi.repository.UserRepoImpl
 import kotlinx.coroutines.launch
+
+// Specific brown color from the "फेरिPheri" image
+val AppBrandColor = Color(0xFF5D4037)
 
 @Composable
 fun SettingsScreen() {
@@ -41,26 +53,148 @@ fun SettingsScreen() {
 
     val favoriteRepo = remember { FavoriteRepository() }
     val productRepo = remember { ProductRepoImpl() }
+    val userRepo = remember { UserRepoImpl() }
 
-    // TEMP LOCAL STATE (no backend)
-    var fullName by remember { mutableStateOf("Your Name") }
-    var username by remember { mutableStateOf("username") }
-    var phoneNumber by remember { mutableStateOf("98XXXXXXXX") }
+    var fullName by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
+    var profileImageUrl by remember { mutableStateOf("") }
+    var userId by remember { mutableStateOf("") }
+
+    var showPasswordDialog by remember { mutableStateOf(false) }
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
 
     var likedProducts by remember { mutableStateOf<List<ProductModel>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var isSaving by remember { mutableStateOf(false) }
+    var isUploadingImage by remember { mutableStateOf(false) }
 
-    /* ───────── FETCH LIKED POSTS ONLY ───────── */
-    LaunchedEffect(Unit) {
-        val likedList = favoriteRepo.getFavorites()
-        val likedIds = likedList.map { it.productId }
-
-        productRepo.getAllProduct { success, _, products ->
-            if (success && products != null) {
-                likedProducts = products.filter { it.id in likedIds }
+    // Image picker launcher
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            isUploadingImage = true
+            scope.launch {
+                val uploadedUrl = userRepo.uploadProfileImage(it)
+                if (uploadedUrl != null) {
+                    profileImageUrl = uploadedUrl
+                    Toast.makeText(context, "Profile picture updated!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
+                }
+                isUploadingImage = false
             }
-            isLoading = false
         }
+    }
+
+    LaunchedEffect(Unit) {
+        scope.launch {
+            // Get current user data
+            val user = userRepo.getCurrentUser()
+            if (user != null) {
+                fullName = user.fullName
+                username = user.username
+                phoneNumber = user.phoneNumber
+                profileImageUrl = user.profileImageUrl
+                userId = user.userId
+            }
+
+            val likedList = favoriteRepo.getFavorites()
+            val likedIds = likedList.map { it.productId }
+
+            productRepo.getAllProduct { success, _, products ->
+                if (success && products != null) {
+                    likedProducts = products.filter { it.id in likedIds }
+                }
+                isLoading = false
+            }
+        }
+    }
+
+    if (showPasswordDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showPasswordDialog = false
+                currentPassword = ""
+                newPassword = ""
+                confirmPassword = ""
+            },
+            title = { Text("Change Password") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = currentPassword,
+                        onValueChange = { currentPassword = it },
+                        label = { Text("Current Password") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = newPassword,
+                        onValueChange = { newPassword = it },
+                        label = { Text("New Password") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it },
+                        label = { Text("Confirm New Password") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        when {
+                            currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty() -> {
+                                Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                            }
+                            newPassword != confirmPassword -> {
+                                Toast.makeText(context, "New passwords don't match", Toast.LENGTH_SHORT).show()
+                            }
+                            newPassword.length < 6 -> {
+                                Toast.makeText(context, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
+                            }
+                            else -> {
+                                userRepo.changePassword(newPassword,
+                                    onSuccess = {
+                                        Toast.makeText(context, "Password changed successfully", Toast.LENGTH_SHORT).show()
+                                        showPasswordDialog = false
+                                        currentPassword = ""
+                                        newPassword = ""
+                                        confirmPassword = ""
+                                    },
+                                    onError = { error ->
+                                        Toast.makeText(context, "Error: $error", Toast.LENGTH_LONG).show()
+                                    }
+                                )
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = AppBrandColor)
+                ) {
+                    Text("Change Password")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showPasswordDialog = false
+                    currentPassword = ""
+                    newPassword = ""
+                    confirmPassword = ""
+                }) {
+                    Text("Cancel", color = AppBrandColor)
+                }
+            }
+        )
     }
 
     if (isLoading) {
@@ -68,40 +202,69 @@ fun SettingsScreen() {
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(color = AppBrandColor)
         }
         return
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFDF8F3))
-            .padding(16.dp)
-    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top
+        ) {
 
-        /* ───── SEARCH ───── */
-        OutlinedTextField(
-            value = "",
-            onValueChange = {},
-            placeholder = { Text("Search") },
-            leadingIcon = { Icon(Icons.Default.Search, null) },
-            shape = RoundedCornerShape(50),
-            modifier = Modifier.fillMaxWidth()
-        )
+            // Profile Image with upload button
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box {
+                    if (profileImageUrl.isNotEmpty()) {
+                        AsyncImage(
+                            model = profileImageUrl,
+                            contentDescription = "Profile Picture",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape)
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = R.drawable.profile),
+                            contentDescription = "Default Profile",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape)
+                        )
+                    }
 
-        Spacer(modifier = Modifier.height(20.dp))
+                    if (isUploadingImage) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .align(Alignment.Center),
+                            color = AppBrandColor
+                        )
+                    }
+                }
 
-        /* ───── PROFILE ───── */
-        Row {
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Image(
-                painter = painterResource(id = R.drawable.profile),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(90.dp)
-                    .clip(CircleShape)
-            )
+                Button(
+                    onClick = { imagePickerLauncher.launch("image/*") },
+                    colors = ButtonDefaults.buttonColors(containerColor = AppBrandColor),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.width(120.dp),
+                    enabled = !isUploadingImage
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_upload_file_24),
+                        contentDescription = "Choose File",
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Choose file", fontSize = 14.sp)
+                }
+            }
 
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -113,28 +276,105 @@ fun SettingsScreen() {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = { /* saved later */ },
-                    modifier = Modifier.width(220.dp)
+                    onClick = {
+                        if (userId.isEmpty()) {
+                            Toast.makeText(context, "User ID not found", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        isSaving = true
+
+                        val updates = hashMapOf<String, Any>(
+                            "fullName" to fullName,
+                            "phoneNumber" to phoneNumber
+                        )
+
+                        userRepo.updateSellerProfile(userId, updates) { success, message ->
+                            isSaving = false
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.width(220.dp),
+                    enabled = !isSaving,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = AppBrandColor
+                    ),
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("Save Changes")
+                    if (isSaving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = Color.White
+                        )
+                    } else {
+                        Text("Save Changes", color = Color.White)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedButton(
+                    onClick = { showPasswordDialog = true },
+                    modifier = Modifier.width(220.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = AppBrandColor
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, AppBrandColor)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_lock_24),
+                        contentDescription = "Change Password",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Change Password")
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Logout Button
+                OutlinedButton(
+                    onClick = {
+                        userRepo.logout()
+                        Toast.makeText(context, "Logged out successfully", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(context, LoginActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier.width(220.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xFFDC2626)
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFDC2626))
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_logout_24),
+                        contentDescription = "Logout",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Log Out")
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        /* ───── LIKED POSTS ───── */
-        Text("Liked Posts", fontWeight = FontWeight.Bold)
+        /* ───── FAVORITE SECTION ───── */
+        Text("Favorite", fontWeight = FontWeight.Bold, fontSize = 18.sp)
 
         Spacer(modifier = Modifier.height(12.dp))
 
         if (likedProducts.isEmpty()) {
-            Text("No liked posts yet", color = Color.Gray)
+            Text("No favorite items yet", color = Color.Gray)
         } else {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.height(400.dp)
             ) {
                 items(likedProducts) { product ->
                     LikedProductItem(
@@ -145,16 +385,14 @@ fun SettingsScreen() {
                                     LikedProducts(productId = product.id),
                                     isFavorite = false
                                 )
-                                likedProducts =
-                                    likedProducts.filter { it.id != product.id }
+                                likedProducts = likedProducts.filter { it.id != product.id }
+                                Toast.makeText(context, "Removed from favorites", Toast.LENGTH_SHORT).show()
                             }
                         },
                         onClick = {
                             context.startActivity(
-                                Intent(
-                                    context,
-                                    ItemDescriptionActivity::class.java
-                                ).putExtra("productId", product.id)
+                                Intent(context, ItemDescriptionActivity::class.java)
+                                    .putExtra("productId", product.id)
                             )
                         }
                     )
@@ -178,7 +416,11 @@ fun EditableProfileField(
             value = value,
             onValueChange = onValueChange,
             singleLine = true,
-            modifier = Modifier.width(220.dp)
+            modifier = Modifier.width(220.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = AppBrandColor,
+                unfocusedBorderColor = Color.Gray
+            )
         )
         Spacer(modifier = Modifier.height(6.dp))
     }
@@ -228,10 +470,4 @@ fun LikedProductItem(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SettingsScreenPreview() {
-    SettingsScreen()
 }

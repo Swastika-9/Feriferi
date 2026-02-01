@@ -3,6 +3,7 @@ package com.example.feriferi.view
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,7 +28,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.feriferi.ForgotPasswordActivity
 import com.example.feriferi.R
 import com.example.feriferi.ui.theme.*
 import com.google.firebase.auth.FirebaseAuth
@@ -52,7 +52,7 @@ fun LoginScreen() {
     val activity = context as? Activity
 
     val auth = if (!isPreview) FirebaseAuth.getInstance() else null
-    val database = if (!isPreview) FirebaseDatabase.getInstance().getReference("users") else null
+    val database = if (!isPreview) FirebaseDatabase.getInstance().getReference("Users") else null
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -116,9 +116,9 @@ fun LoginScreen() {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             painter = if (passwordVisible)
-                                painterResource(R.drawable.baseline_visibility_off_24)
+                                painterResource(R.drawable.baseline_visibility_24)
                             else
-                                painterResource(R.drawable.baseline_visibility_24),
+                                painterResource(R.drawable.baseline_visibility_off_24),
                             contentDescription = null,
                             tint = TextBrown
                         )
@@ -143,9 +143,9 @@ fun LoginScreen() {
                     color = Color(0xFF78350F),
                     fontSize = 14.sp,
                     modifier = Modifier.clickable {
-                        if (!isPreview) activity?.startActivity(Intent(activity, ForgotPasswordActivity::class.java))
-
-                        context.startActivity(Intent(context, ForgotPasswordActivity::class.java))
+                        if (!isPreview) {
+                            context.startActivity(Intent(context, ForgotPasswordActivity::class.java))
+                        }
                     }
                 )
             }
@@ -168,7 +168,6 @@ fun LoginScreen() {
 
                         auth?.signInWithEmailAndPassword(email, password)
                             ?.addOnSuccessListener {
-
                                 val userId = auth.currentUser?.uid
                                 if (userId == null) {
                                     isLoading = false
@@ -176,52 +175,76 @@ fun LoginScreen() {
                                     return@addOnSuccessListener
                                 }
 
+                                Log.d("LoginActivity", "User logged in: $userId")
+
+                                // Fetch the entire user node to debug
+                                Log.d("LoginActivity", "Attempting to read from: users/$userId")
+
                                 database
                                     ?.child(userId)
-                                    ?.child("role")
                                     ?.get()
                                     ?.addOnSuccessListener { snapshot ->
-
                                         isLoading = false
-                                        val role = snapshot.getValue(String::class.java)
 
-                                        when (role?.lowercase()) {
-                                            "admin" -> {
-                                                context.startActivity(
-                                                    Intent(context, AdminDashboardActivity::class.java)
-                                                )
-                                            }
-                                            "seller" -> {
-                                                context.startActivity(
-                                                    Intent(context, SellerDashboardActivity::class.java)
-                                                )
-                                            }
-                                            else -> {
-                                                // buyer OR null
-                                                context.startActivity(
-                                                    Intent(context, DashboardActivity::class.java)
-                                                )
-                                            }
+                                        Log.d("LoginActivity", "Snapshot exists: ${snapshot.exists()}")
+                                        Log.d("LoginActivity", "User data: ${snapshot.value}")
+                                        Log.d("LoginActivity", "Snapshot children count: ${snapshot.childrenCount}")
+
+                                        // Check if user node exists
+                                        if (!snapshot.exists()) {
+                                            Toast.makeText(context, "User data not found in database. Please check Firebase.", Toast.LENGTH_LONG).show()
+                                            Log.e("LoginActivity", "User node does not exist in database!")
+                                            return@addOnSuccessListener
                                         }
 
-                                        activity?.finish()
+                                        // Get role from snapshot
+                                        val role = snapshot.child("role").getValue(String::class.java)
+
+                                        Log.d("LoginActivity", "Role found: $role")
+
+                                        // Normalize role to lowercase for comparison
+                                        val normalizedRole = role?.lowercase()?.trim()
+
+                                        when {
+                                            normalizedRole == null || normalizedRole.isBlank() -> {
+                                                Toast.makeText(context, "Login Error: Role missing in database", Toast.LENGTH_LONG).show()
+                                            }
+                                            normalizedRole == "admin" -> {
+                                                Log.d("LoginActivity", "Opening Admin Dashboard")
+                                                context.startActivity(Intent(context, AdminDashboardActivity::class.java))
+                                                activity?.finish()
+                                            }
+                                            normalizedRole == "seller" -> {
+                                                Log.d("LoginActivity", "Opening Seller Dashboard")
+                                                context.startActivity(Intent(context, SellerDashboardActivity::class.java))
+                                                activity?.finish()
+                                            }
+                                            normalizedRole == "buyer" -> {
+                                                Log.d("LoginActivity", "Opening Buyer Dashboard")
+                                                context.startActivity(Intent(context, DashboardActivity::class.java))
+                                                activity?.finish()
+                                            }
+                                            else -> {
+                                                Toast.makeText(context, "Unknown Role: $normalizedRole", Toast.LENGTH_LONG).show()
+                                            }
+                                        }
                                     }
-                                    ?.addOnFailureListener {
+                                    ?.addOnFailureListener { exception ->
                                         isLoading = false
-                                        Toast.makeText(
-                                            context,
-                                            "Failed to fetch role: ${it.message}",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        Log.e("LoginActivity", "Database read failed!", exception)
+                                        Log.e("LoginActivity", "Exception type: ${exception.javaClass.simpleName}")
+                                        Log.e("LoginActivity", "Exception message: ${exception.message}")
+                                        Toast.makeText(context, "Database Error: ${exception.message}\nCheck if you're using Realtime Database (not Firestore)", Toast.LENGTH_LONG).show()
                                     }
                             }
-                            ?.addOnFailureListener {
+                            ?.addOnFailureListener { e ->
                                 isLoading = false
-                                Toast.makeText(
-                                    context,
-                                    "Login failed: ${it.message}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                val errorMsg = when(e) {
+                                    is com.google.firebase.auth.FirebaseAuthInvalidUserException -> "Account not found."
+                                    is com.google.firebase.auth.FirebaseAuthInvalidCredentialsException -> "Incorrect password."
+                                    else -> e.message ?: "Login failed."
+                                }
+                                Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
                             }
                     },
                     modifier = Modifier
@@ -239,7 +262,9 @@ fun LoginScreen() {
             Spacer(modifier = Modifier.height(15.dp))
 
             Button(
-                onClick = { },
+                onClick = {
+                    Toast.makeText(context, "Google Sign In not implemented yet", Toast.LENGTH_SHORT).show()
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = ButtonColor),
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(10.dp)
@@ -258,7 +283,9 @@ fun LoginScreen() {
                     color = ButtonColor,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable {
-                        if (!isPreview) activity?.startActivity(Intent(activity, RegistrationActivity::class.java))
+                        if (!isPreview) {
+                            context.startActivity(Intent(context, RegistrationActivity::class.java))
+                        }
                     }
                 )
             }

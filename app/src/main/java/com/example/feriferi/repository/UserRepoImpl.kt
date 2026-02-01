@@ -16,10 +16,9 @@ class UserRepoImpl : UserRepository {
 
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseDatabase.getInstance()
-    private val usersRef = db.getReference("Users") // Points to "Users" node
+    private val usersRef = db.getReference("Users")
     private val usernamesRef = db.getReference("Usernames")
 
-    // --- REGISTER ---
     override suspend fun registerUser(
         email: String,
         password: String,
@@ -94,56 +93,52 @@ class UserRepoImpl : UserRepository {
         }
     }
 
-    override fun verifyUser(
-        uid: String,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override fun removeUser(
-        uid: String,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override fun changePassword(
-        newPassword: String,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override fun updateSellerProfile(
-        uid: String,
-        updates: Map<String, Any>,
-        callback: (Boolean, String) -> Unit
-    ) {
-        TODO("Not yet implemented")
-    }
-
     // --- HELPER: Cloudinary ---
-    private suspend fun uploadToCloudinary(uri: Uri): String =
-        suspendCancellableCoroutine { continuation ->
-            MediaManager.get().upload(uri)
-                .unsigned("product_images") // Keep this working preset!
-                .callback(object : UploadCallback {
-                    override fun onStart(requestId: String) {}
-                    override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {}
-                    override fun onSuccess(requestId: String, resultData: Map<*, *>) {
-                        continuation.resume(resultData["secure_url"].toString())
-                    }
+    private suspend fun uploadToCloudinary(uri: Uri): String = suspendCancellableCoroutine { continuation ->
+        MediaManager.get().upload(uri)
+            .unsigned("product_images") // Keep this working preset!
+            .callback(object : UploadCallback {
+                override fun onStart(requestId: String) {}
+                override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {}
+                override fun onSuccess(requestId: String, resultData: Map<*, *>) {
+                    continuation.resume(resultData["secure_url"].toString())
+                }
+                override fun onError(requestId: String, error: ErrorInfo) {
+                    continuation.resumeWithException(Exception(error.description))
+                }
+                override fun onReschedule(requestId: String, error: ErrorInfo) {}
+            })
+            .dispatch()
+    }
 
-                    override fun onError(requestId: String, error: ErrorInfo) {
-                        continuation.resumeWithException(Exception(error.description))
-                    }
+    // --- USER MANAGEMENT & PROFILE UPDATES ---
 
-                    override fun onReschedule(requestId: String, error: ErrorInfo) {}
-                })
-                .dispatch()
-        }
+    // NEW FUNCTION: Updates specific fields (Name, Phone, ImageUrl) without overwriting the whole user
+    override fun updateSellerProfile(uid: String, updates: Map<String, Any>, callback: (Boolean, String) -> Unit) {
+        usersRef.child(uid).updateChildren(updates)
+            .addOnSuccessListener {
+                callback(true, "Profile Updated Successfully")
+            }
+            .addOnFailureListener {
+                callback(false, it.message ?: "Failed to update profile")
+            }
+    }
+
+    override fun verifyUser(uid: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        usersRef.child(uid).child("isVerified").setValue(true)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onError(it.message ?: "Error") }
+    }
+
+    override fun removeUser(uid: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        usersRef.child(uid).removeValue()
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onError(it.message ?: "Error") }
+    }
+
+    override fun changePassword(newPassword: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        auth.currentUser?.updatePassword(newPassword)
+            ?.addOnSuccessListener { onSuccess() }
+            ?.addOnFailureListener { onError(it.message ?: "Error") }
+    }
 }

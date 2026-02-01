@@ -12,7 +12,7 @@ class AddToCartActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             FeriferiTheme {
-                // This will work because your ViewModel has a default value for the repository
+
                 val cartViewModel: AddToCartViewModel = viewModel()
 
                 AddToCartScreen(

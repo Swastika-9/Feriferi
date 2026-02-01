@@ -58,7 +58,7 @@ class RegistrationActivity : ComponentActivity() {
 
 @Composable
 fun RegisterScreen() {
-    val userViewModel = remember { UserViewModel(UserRepository()) }
+    val repository: UserRepository = UserRepoImpl()
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -166,8 +166,8 @@ fun RegisterScreen() {
                     IconButton(onClick = { visibility = !visibility }) {
                         Icon(
                             painter = if (visibility)
-                                painterResource(R.drawable.baseline_visibility_off_24)
-                            else painterResource(R.drawable.baseline_visibility_24),
+                                painterResource(R.drawable.baseline_visibility_24)
+                            else painterResource(R.drawable.baseline_visibility_off_24),
                             contentDescription = null,
                             tint = TextBrown
                         )
@@ -258,7 +258,7 @@ fun RegisterScreen() {
                         username = username
                     )
 
-                    userViewModel.registerUser(
+                    UserViewModel(repository).registerUser(
                         email = email,
                         user = user,
                         password = password,
