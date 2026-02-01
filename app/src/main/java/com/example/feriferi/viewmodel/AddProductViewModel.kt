@@ -4,101 +4,63 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.cloudinary.android.MediaManager
-import com.cloudinary.android.callback.ErrorInfo
-import com.cloudinary.android.callback.UploadCallback
+import androidx.lifecycle.viewModelScope
 import com.example.feriferi.model.ProductModel
+import com.example.feriferi.repository.ProductRepoImpl
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore // Changed to Firestore
+import kotlinx.coroutines.launch
 
 class AddProductViewModel : ViewModel() {
 
-    private val _statusMessage = MutableLiveData<String>()
-    val statusMessage: LiveData<String> get() = _statusMessage
+    private val repo = ProductRepoImpl()
+    private val auth = FirebaseAuth.getInstance()
 
-    private val _isUploading = MutableLiveData<Boolean>()
-    val isUploading: LiveData<Boolean> get() = _isUploading
+    // --- 1. LIVE DATA FOR UI STATE (Fixes "Unresolved reference") ---
+    private val _isUploading = MutableLiveData(false)
+    val isUploading: LiveData<Boolean> = _isUploading
 
-    /**
-     * Uploads multiple images to Cloudinary sequentially.
-     * Once all are done, saves the product to Firestore.
-     */
+    private val _statusMessage = MutableLiveData<String?>()
+    val statusMessage: LiveData<String?> = _statusMessage
+
+    // --- 2. UPLOAD FUNCTION (Fixes "Unresolved reference") ---
     fun uploadProductWithImages(product: ProductModel, imageUris: List<Uri>) {
-        if (imageUris.size < 3) {
-            _statusMessage.value = "Please select at least 3 images"
+        val uid = auth.currentUser?.uid
+        if (uid == null) {
+            _statusMessage.value = "User not logged in!"
             return
         }
 
-        _isUploading.value = true
-        val uploadedUrls = mutableListOf<String>()
-        var currentUploadIndex = 0
+        _isUploading.value = true // Show loading spinner
 
-        fun uploadNext() {
-            val uri = imageUris[currentUploadIndex]
-            _statusMessage.postValue("Uploading image ${currentUploadIndex + 1}/${imageUris.size}...")
+        viewModelScope.launch {
+            try {
+                // Prepare the product with the correct Seller ID
+                val newProduct = product.copy(
+                    sellerId = uid,
+                    imageUrls = emptyList() // The repo will fill this after upload
+                )
 
-            MediaManager.get().upload(uri)
-                .unsigned("feripheri_preset") // <--- MUST MATCH YOUR CLOUDINARY PRESET
-                .option("folder", "products")
-                .callback(object : UploadCallback {
-                    override fun onStart(requestId: String?) {}
-                    override fun onProgress(requestId: String?, bytes: Long, totalBytes: Long) {}
+                // Take the first image if available (Since our Repo supports single upload currently)
+                val primaryImageUri = imageUris.firstOrNull()
 
-                    override fun onSuccess(requestId: String?, resultData: Map<*, *>?) {
-                        val imageUrl = resultData?.get("secure_url").toString()
-                        uploadedUrls.add(imageUrl)
-                        currentUploadIndex++
+                // Call the Repo
+                val result = repo.addProduct(newProduct, primaryImageUri)
 
-                        if (currentUploadIndex < imageUris.size) {
-                            uploadNext() // Recursive call for next image
-                        } else {
-                            // All images uploaded, save to Firestore
-                            saveToFirestore(product.copy(imageUrls = uploadedUrls))
-                        }
-                    }
-
-                    override fun onError(requestId: String?, error: ErrorInfo?) {
-                        _isUploading.postValue(false)
-                        _statusMessage.postValue("Cloudinary Error: ${error?.description}")
-                    }
-
-                    override fun onReschedule(requestId: String?, error: ErrorInfo?) {}
-                }).dispatch()
+                if (result.first) {
+                    _statusMessage.value = "Product Added Successfully!"
+                } else {
+                    _statusMessage.value = "Error: ${result.second}"
+                }
+            } catch (e: Exception) {
+                _statusMessage.value = "Error: ${e.message}"
+            } finally {
+                _isUploading.value = false // Hide loading spinner
+            }
         }
-
-        uploadNext()
     }
 
-    private fun saveToFirestore(product: ProductModel) {
-        val db = FirebaseFirestore.getInstance() // Use Firestore instance
-        val currentUser = FirebaseAuth.getInstance().currentUser
-
-        // Ensure we have a valid user
-        if (currentUser == null) {
-            _isUploading.postValue(false)
-            _statusMessage.postValue("Error: User not logged in")
-            return
-        }
-
-        // Generate a new unique ID for the product
-        val newProductRef = db.collection("products").document()
-        val productId = newProductRef.id
-
-        // Create the final product object with ID and SellerID
-        val finalProduct = product.copy(
-            id = productId,
-            sellerId = currentUser.uid // Ensure the seller ID is correct
-        )
-
-        // Save to the "products" collection in Firestore
-        newProductRef.set(finalProduct)
-            .addOnSuccessListener {
-                _isUploading.postValue(false)
-                _statusMessage.postValue("Product Added Successfully!")
-            }
-            .addOnFailureListener { e ->
-                _isUploading.postValue(false)
-                _statusMessage.postValue("Firestore Error: ${e.message}")
-            }
+    // Helper to reset message after showing Toast
+    fun clearStatusMessage() {
+        _statusMessage.value = null
     }
 }
