@@ -1,4 +1,4 @@
-package com.example.feriferi.view
+package com.example.feriferi
 
 import android.app.Activity
 import android.content.Intent
@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -23,7 +24,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.feriferi.R
 
 
 class CategoryActivity : ComponentActivity() {
@@ -91,6 +91,8 @@ fun CategoryBody(category: String) {
     }
 }
 
+// ---------------- PRODUCT CARD ----------------
+
 @Composable
 fun CategoryProductCard(product: CategoryProduct) {
 
@@ -136,12 +138,16 @@ fun CategoryProductCard(product: CategoryProduct) {
     }
 }
 
+// ---------------- DATA MODELS ----------------
+
 data class CategoryProduct(
     val name: String,
     val username: String,
     val category: String,
     val image: Int
 )
+
+// ---------------- DUMMY DATA ----------------
 
 fun sampleCategoryProducts(): List<CategoryProduct> {
     return listOf(
