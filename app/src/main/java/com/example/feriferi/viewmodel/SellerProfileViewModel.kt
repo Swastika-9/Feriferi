@@ -24,7 +24,8 @@ class SellerProfileViewModel : ViewModel() {
         Seller(
             name = "",
             username = "",
-            profileImageUrl = R.drawable.seller_profile
+            // FIX: Initialize as Empty String, not R.drawable.placeholder_image
+            profileImageUrl = ""
         )
     )
     val seller: StateFlow<Seller> = _seller.asStateFlow()
@@ -66,7 +67,7 @@ class SellerProfileViewModel : ViewModel() {
     fun updateProfile(
         uid: String,
         name: String,
-        username: String, // <--- THIS IS THE MISSING PARAMETER
+        username: String,
         phone: String,
         newImageUri: Uri?,
         currentImageUrl: String,
@@ -89,7 +90,7 @@ class SellerProfileViewModel : ViewModel() {
                 // Prepare Updates
                 val updates = mapOf(
                     "fullName" to name,
-                    "username" to cleanUsername, // <--- Saving the new username
+                    "username" to cleanUsername,
                     "phone" to phone,
                     "profileImageUrl" to finalImageUrl
                 )

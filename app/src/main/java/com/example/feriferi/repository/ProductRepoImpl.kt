@@ -74,7 +74,7 @@ class ProductRepoImpl {
     // --- CLOUDINARY UPLOAD ---
     private suspend fun uploadToCloudinary(uri: Uri): String = suspendCancellableCoroutine { continuation ->
         MediaManager.get().upload(uri)
-            .unsigned("product_images") // <--- THIS IS THE FIX. IT MATCHES YOUR SCREENSHOT.
+            .unsigned("product_images")
             .callback(object : UploadCallback {
                 override fun onStart(requestId: String) {}
                 override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {}

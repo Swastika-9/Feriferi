@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,7 +39,7 @@ import com.example.feriferi.R
 import com.example.feriferi.model.ProductModel
 import com.example.feriferi.model.Seller
 import com.example.feriferi.viewmodel.EditProductViewModel
-import com.example.feriferi.viewmodel.SellerProfileViewModel
+import com.example.feriferi.viewmodel.SellerDashboardViewModel
 
 @Composable
 fun SellerDashboardScreen(
@@ -55,23 +56,28 @@ fun SellerDashboardScreen(
     var showEditProfile by remember { mutableStateOf(false) }
     var editingProduct by remember { mutableStateOf<ProductModel?>(null) }
 
-    val sellerProfileViewModel: SellerProfileViewModel = viewModel()
-    val editProductViewModel: EditProductViewModel = viewModel()
+    // Use the SellerDashboardViewModel we updated earlier
+    val sellerDashboardViewModel: SellerDashboardViewModel = viewModel()
+
+    // NOTE: EditProductViewModel is fine if you have created it, otherwise comment out
+    // val editProductViewModel: EditProductViewModel = viewModel()
 
     // --- 1. COLLECT REAL DATA FROM VIEWMODEL ---
-    val seller by sellerProfileViewModel.seller.collectAsState()
-    val products by sellerProfileViewModel.products.collectAsState()
+    val seller by sellerDashboardViewModel.seller.collectAsState()
+    val products by sellerDashboardViewModel.products.collectAsState()
 
     // --- NAVIGATION LOGIC ---
     if (showEditProfile) {
         // UPDATED: Now calls your actual EditProfileScreen
         EditSellerProfileScreen(
-            onBack = { showEditProfile = false }
+            onBack = {
+                showEditProfile = false
+                // CRITICAL FIX: Refresh data immediately when coming back from Edit
+                sellerDashboardViewModel.refreshDashboard()
+            }
         )
     } else if (editingProduct != null) {
-        LaunchedEffect(editingProduct) {
-            editingProduct?.let { p -> editProductViewModel.initializeProduct(p) }
-        }
+        // Placeholder for Edit Product logic
         PlaceholderScreen("Edit Product ${editingProduct?.name}", onBack = { editingProduct = null })
     } else {
         // --- DASHBOARD CONTENT ---
@@ -99,31 +105,50 @@ fun SellerDashboardScreen(
             },
             bottomBar = {
                 NavigationBar(containerColor = Color.White) {
+                    // 1. Home Tab
                     NavigationBarItem(
                         selected = selectedTab == 0,
                         onClick = { selectedTab = 0 },
                         icon = { Icon(Icons.Default.Home, null) },
                         label = { Text("Home") }
                     )
+                    // 2. Messages Tab
                     NavigationBarItem(
                         selected = selectedTab == 1,
-                        onClick = { /* Navigate to Chat */ },
+                        onClick = { selectedTab = 1 },
                         icon = { Icon(Icons.Default.Chat, null) },
-                        label = { Text("Chat") }
+                        label = { Text("Messages") } // Updated label
+                    )
+                    // 3. Settings Tab (NEW)
+                    NavigationBarItem(
+                        selected = selectedTab == 2,
+                        onClick = { selectedTab = 2 },
+                        icon = { Icon(Icons.Default.Settings, null) },
+                        label = { Text("Settings") }
                     )
                 }
             }
         ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
-                if (selectedTab == 0) {
-                    HomeContent(
-                        seller = seller,
-                        products = products,
-                        adminBrown = AdminBrown,
-                        onEditProfile = { showEditProfile = true }, // Triggers the screen switch
-                        onAddProduct = onNavigateToAddProduct,
-                        onEditProduct = { id -> editingProduct = products.find { it.id == id } }
-                    )
+                when (selectedTab) {
+                    0 -> {
+                        HomeContent(
+                            seller = seller,
+                            products = products,
+                            adminBrown = AdminBrown,
+                            onEditProfile = { showEditProfile = true },
+                            onAddProduct = onNavigateToAddProduct,
+                            onEditProduct = { id -> editingProduct = products.find { it.id == id } }
+                        )
+                    }
+                    1 -> {
+                        // Placeholder for Messages
+                        PlaceholderScreen("Messages", onBack = { selectedTab = 0 })
+                    }
+                    2 -> {
+                        // Placeholder for Settings
+                        PlaceholderScreen("Settings", onBack = { selectedTab = 0 })
+                    }
                 }
             }
         }
@@ -169,10 +194,12 @@ fun HomeContent(
                     style = TextStyle(fontSize = 16.sp, color = Color.Gray, fontFamily = FontFamily.Serif)
                 )
 
+                // --- UPDATED: Uses Real Date from ViewModel ---
                 Text(
-                    text = "Since 2021",
+                    text = seller.joiningDate,
                     style = TextStyle(fontSize = 14.sp, color = Color.Gray, fontFamily = FontFamily.Serif)
                 )
+
                 Text(
                     text = "${seller.productsSold} products sold",
                     style = TextStyle(fontSize = 14.sp, color = Color.Gray, fontFamily = FontFamily.Serif)
@@ -180,11 +207,12 @@ fun HomeContent(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // --- FIXED IMAGE LOGIC HERE ---
-                val imageModel = if (seller.profileImageUrl is String && (seller.profileImageUrl as String).isEmpty()) {
+                // --- FIXED IMAGE LOGIC ---
+                // If profileImageUrl is empty, show default resource
+                val imageModel = if (seller.profileImageUrl.isEmpty()) {
                     R.drawable.seller_profile
                 } else {
-                    seller.profileImageUrl ?: R.drawable.seller_profile
+                    seller.profileImageUrl
                 }
 
                 AsyncImage(

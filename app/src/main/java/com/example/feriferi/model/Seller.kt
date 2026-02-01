@@ -4,7 +4,8 @@ data class Seller(
     val id: String = "",
     val name: String = "",
     val username: String = "",
-    val profileImageUrl: Any? = null, // Can be String (URL) or Int (R.drawable.xxx)
-    val productsSold: Int = 0,
-    val phone: String = "" // <--- ADD THIS FIELD
+    val profileImageUrl: String = "",
+    val phone: String = "",
+    val productsSold: Int = 0, // This will now come from "Orders", not "Products"
+    val joiningDate: String = "Since 2026" // <--- NEW FIELD
 )
