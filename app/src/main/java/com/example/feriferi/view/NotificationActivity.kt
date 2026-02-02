@@ -1,44 +1,39 @@
 package com.example.feriferi.view
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.feriferi.ui.theme.FeriferiTheme
-
-data class NotificationItem(
-    val id: String,
-    val title: String,
-    val description: String,
-    val time: String,
-    val isRead: Boolean = false
-)
+import coil.compose.AsyncImage
+import com.example.feriferi.model.NotificationModel
+import com.example.feriferi.repository.NotificationRepository
+import java.text.SimpleDateFormat
+import java.util.*
 
 class NotificationActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            FeriferiTheme {
-                NotificationScreen(onBack = { finish() })
-            }
+            NotificationScreen(onBack = { finish() })
         }
     }
 }
@@ -46,13 +41,12 @@ class NotificationActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationScreen(onBack: () -> Unit) {
-    val notifications = listOf(
-        NotificationItem("1", "Order Confirmed", "Your order for 'Zara Sandals' has been confirmed.", "2m ago"),
-        NotificationItem("2", "Price Drop Alert!", "An item in your wishlist is now 20% off.", "1h ago"),
-        NotificationItem("3", "New Message", "Seller 'Vivienne' sent you a message.", "3h ago", isRead = true),
-        NotificationItem("4", "Shipment Update", "Your package is out for delivery.", "Yesterday"),
-        NotificationItem("5", "Flash Sale", "Summer collection is now live! Shop now.", "2 days ago", isRead = true)
-    )
+    val context = LocalContext.current
+    var notifications by remember { mutableStateOf<List<NotificationModel>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        NotificationRepository.getNotifications { list -> notifications = list }
+    }
 
     Scaffold(
         topBar = {
@@ -60,80 +54,100 @@ fun NotificationScreen(onBack: () -> Unit) {
                 title = { Text("Notifications", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         }
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .background(Color(0xFFF8F9FA))
-        ) {
-            items(notifications) { notification ->
-                NotificationRow(notification)
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = Color.LightGray)
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding).background(Color(0xFFF9F3F0))) {
+            if (notifications.isEmpty()) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No notifications yet", color = Color.Gray)
+                }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(notifications) { notif ->
+                        NotificationItem(notif) {
+                            // --- CLICK LOGIC ---
+                            if (notif.type == "order_request") {
+                                // Navigate to Seller Dashboard -> Orders Tab (Index 1)
+                                val intent = Intent(context, SellerDashboardActivity::class.java)
+                                intent.putExtra("SELECTED_TAB", 1)
+                                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                context.startActivity(intent)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun NotificationRow(notification: NotificationItem) {
-    Row(
+fun NotificationItem(notif: NotificationModel, onClick: () -> Unit) {
+    Card(
+        // Make the whole card clickable
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .background(
-                    if (notification.isRead) Color.LightGray else Color(0xFF8D736B),
-                    shape = CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                Icons.Default.Notifications,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
-            )
-        }
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.Top) {
+                if (notif.productImage.isNotEmpty()) {
+                    AsyncImage(
+                        model = notif.productImage,
+                        contentDescription = null,
+                        modifier = Modifier.size(50.dp).clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
 
-        Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(notif.title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(notif.message, fontSize = 14.sp, color = Color.DarkGray)
+                    Spacer(modifier = Modifier.height(6.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = notification.title,
-                fontSize = 16.sp,
-                fontWeight = if (notification.isRead) FontWeight.Normal else FontWeight.Bold
-            )
-            Text(
-                text = notification.description,
-                fontSize = 14.sp,
-                color = Color.Gray,
-                lineHeight = 18.sp
-            )
-            Text(
-                text = notification.time,
-                fontSize = 12.sp,
-                color = Color.LightGray,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-        }
+                    val sdf = SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault())
+                    Text(sdf.format(Date(notif.timestamp)), fontSize = 12.sp, color = Color.Gray)
+                }
+            }
 
-        if (!notification.isRead) {
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .background(Color(0xFF8D736B), CircleShape)
-            )
+            // Buttons for Actions
+            if (notif.type == "offer" || notif.type == "order_request") {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Button(
+                        onClick = {
+                            if (notif.type == "offer") NotificationRepository.acceptOffer(notif)
+                            else NotificationRepository.acceptOrder(notif)
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8D736B)),
+                        shape = RoundedCornerShape(8.dp)
+                    ) { Text("Accept") }
+
+                    OutlinedButton(
+                        onClick = {
+                            if (notif.type == "offer") NotificationRepository.rejectOffer(notif)
+                            else NotificationRepository.rejectOrder(notif)
+                        },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                    ) { Text("Decline") }
+                }
+            }
         }
     }
 }

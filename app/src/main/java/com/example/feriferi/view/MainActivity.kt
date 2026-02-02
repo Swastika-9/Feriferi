@@ -1,4 +1,4 @@
-package com.example.feriferi
+package com.example.feriferi.view
 
 import android.content.Intent
 import android.os.Bundle
@@ -15,17 +15,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.cloudinary.android.MediaManager // Import Cloudinary
+import com.cloudinary.android.MediaManager
 import com.example.feriferi.ui.theme.FeriferiTheme
+
+// --- ADD THIS IMPORT ---
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // --- DIAGNOSTIC: CHECK CLOUDINARY IMMEDIATELY ---
         checkCloudinaryConnection()
-        // ------------------------------------------------
 
         setContent {
             FeriferiTheme {
@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
                     MainScreen(
                         modifier = Modifier.padding(innerPadding),
                         onStartClick = {
-                            // Navigate to Login Activity
+                            // This now works because we imported LoginActivity
                             startActivity(Intent(this, LoginActivity::class.java))
                         }
                     )
@@ -44,12 +44,9 @@ class MainActivity : ComponentActivity() {
 
     private fun checkCloudinaryConnection() {
         try {
-            // FIXED LINE: Correct way to get the Cloud Name
             val cloudName = MediaManager.get().cloudinary.config.cloudName
-
             Toast.makeText(this, "SUCCESS: Connected to Cloud: $cloudName", Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
-            // If this crashes, FeriferiApp.kt didn't run or wasn't added to Manifest
             Toast.makeText(this, "ERROR: Cloudinary NOT Initialized! Check Manifest.", Toast.LENGTH_LONG).show()
             e.printStackTrace()
         }

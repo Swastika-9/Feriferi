@@ -1,16 +1,14 @@
 package com.example.feriferi.view
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -21,47 +19,111 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.feriferi.R
+import com.example.feriferi.viewmodel.AddToCartViewModel
 
 class PaymentActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        // 1. Get Shipping Details passed from CheckoutActivity
+        val name = intent.getStringExtra("NAME") ?: ""
+        val phone = intent.getStringExtra("PHONE") ?: ""
+        val address = intent.getStringExtra("ADDRESS") ?: ""
+
         setContent {
-            PaymentActivity()
+            PaymentScreen(
+                shippingName = name,
+                shippingPhone = phone,
+                shippingAddress = address,
+                onSuccess = {
+                    val intent = Intent(this, DashboardActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(intent)
+                }
+            )
         }
     }
 }
 
-
-// Color constants based on your image
+// Color constants
 val BgBeige = Color(0xFFFDE8C9)
 val CardPink = Color(0xFFF9A8D4)
 val ButtonBrown = Color(0xFF9E5C2C)
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun paymentactivity() {
-    var selectedOption by remember { mutableStateOf("Credit card") }
-    val options = listOf("Cash on Delivery", "Credit card", "e-sewa", "Khalti")
+fun PaymentScreen(
+    shippingName: String,
+    shippingPhone: String,
+    shippingAddress: String,
+    onSuccess: () -> Unit,
+    viewModel: AddToCartViewModel = viewModel()
+) {
+    val context = LocalContext.current
+    var selectedOption by remember { mutableStateOf("Cash on Delivery") }
+
+    // --- UPDATED OPTIONS: ONLY COD & E-SEWA ---
+    val options = listOf("Cash on Delivery", "e-sewa")
+
+    // ViewModel Data
+    val subtotal = viewModel.getSubtotal()
+    val shipping = viewModel.shippingFee
+    val total = viewModel.getTotal()
+
+    var showSuccessDialog by remember { mutableStateOf(false) }
+
+    // --- LAUNCHER FOR E-SEWA ---
+    val paymentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // Payment Success -> Place Order
+            viewModel.checkout(
+                name = shippingName,
+                phone = shippingPhone,
+                address = shippingAddress,
+                paymentMethod = "Online (e-sewa)"
+            ) {
+                showSuccessDialog = true
+            }
+        } else {
+            Toast.makeText(context, "Payment Cancelled", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // --- SUCCESS DIALOG ---
+    if (showSuccessDialog) {
+        AlertDialog(
+            onDismissRequest = { },
+            title = { Text("Order Placed Successfully!") },
+            text = { Text("Your order has been sent to the Seller. Check 'Orders' in Dashboard for updates.") },
+            confirmButton = {
+                Button(onClick = onSuccess, colors = ButtonDefaults.buttonColors(containerColor = ButtonBrown)) {
+                    Text("Go Home")
+                }
+            },
+            containerColor = Color.White
+        )
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFFFFFBF7))
             .padding(horizontal = 16.dp)
     ) {
-        // --- Custom Top Bar ---
+        // --- Top Bar ---
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp),
+            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -72,7 +134,6 @@ fun paymentactivity() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // --- Title ---
         Text(
             text = "Payment Method",
             fontSize = 28.sp,
@@ -98,29 +159,44 @@ fun paymentactivity() {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(CardPink, RoundedCornerShape(4.dp))
+                .background(CardPink.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
                 .padding(16.dp)
         ) {
-            PriceLine(label = "Transfer Amount", amount = "1043.25", hasIcon = true)
-            PriceLine(label = "Additional Cost", amount = "1.75")
+            PriceLine(label = "Transfer Amount", amount = subtotal.toInt().toString(), hasIcon = true)
+            PriceLine(label = "Additional Cost", amount = shipping.toInt().toString())
             Spacer(modifier = Modifier.height(8.dp))
             Box(Modifier.fillMaxWidth().height(1.dp).background(Color.Gray))
             Spacer(modifier = Modifier.height(8.dp))
-            PriceLine(label = "Total", amount = "1045", isTotal = true)
+            PriceLine(label = "Total", amount = total.toInt().toString(), isTotal = true)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // --- Pay Button ---
         Button(
-            onClick = { /* Action */ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(65.dp),
+            onClick = {
+                if (selectedOption == "e-sewa") {
+                    // Open Payment Gateway Activity
+                    val intent = Intent(context, PaymentActivity::class.java)
+                    intent.putExtra("AMOUNT", total.toInt().toString())
+                    paymentLauncher.launch(intent)
+                } else {
+                    // Cash on Delivery -> Place Order Directly
+                    viewModel.checkout(
+                        name = shippingName,
+                        phone = shippingPhone,
+                        address = shippingAddress,
+                        paymentMethod = "Cash on Delivery"
+                    ) {
+                        showSuccessDialog = true
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth().height(65.dp),
             colors = ButtonDefaults.buttonColors(containerColor = ButtonBrown),
-            shape = RoundedCornerShape(4.dp)
+            shape = RoundedCornerShape(8.dp)
         ) {
-            Text("Pay", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            Text("Pay Rs ${total.toInt()}", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -129,37 +205,38 @@ fun paymentactivity() {
 
 @Composable
 fun PaymentMethodItem(text: String, selected: Boolean, onSelect: () -> Unit) {
+    val borderColor = if (selected) ButtonBrown else Color.Transparent
+    val backgroundColor = if (selected) CardPink else Color(0xFFF5F5F5)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(CardPink, RoundedCornerShape(4.dp))
+            .background(backgroundColor, RoundedCornerShape(8.dp))
+            .border(2.dp, borderColor, RoundedCornerShape(8.dp))
             .selectable(selected = selected, onClick = onSelect)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // --- UPDATED IMAGES: Only COD and eSewa ---
         val imageRes = when (text) {
             "Cash on Delivery" -> R.drawable.cashondeliver
-            "Credit card" -> R.drawable.creditcard
             "e-sewa" -> R.drawable.eshewa
-            "Khalti" -> R.drawable.khalti
-            else -> R.drawable.google
+            else -> R.drawable.google // Just a fallback, won't be used now
         }
-        // Icon Placeholder (White Box)
+
         Image(
             painter = painterResource(id = imageRes),
             contentDescription = null,
             modifier = Modifier
                 .size(60.dp, 40.dp)
-                .background(Color.White)
-                .border(0.5.dp, Color.Gray),
+                .background(Color.White, RoundedCornerShape(4.dp))
+                .padding(4.dp),
             contentScale = ContentScale.Fit
         )
 
         Text(
             text = text,
-            modifier = Modifier
-                .padding(start = 16.dp)
-                .weight(1f),
+            modifier = Modifier.padding(start = 16.dp).weight(1f),
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold
         )
@@ -167,7 +244,7 @@ fun PaymentMethodItem(text: String, selected: Boolean, onSelect: () -> Unit) {
         RadioButton(
             selected = selected,
             onClick = onSelect,
-            colors = RadioButtonDefaults.colors(selectedColor = Color.Black)
+            colors = RadioButtonDefaults.colors(selectedColor = ButtonBrown)
         )
     }
 }
@@ -181,28 +258,16 @@ fun PriceLine(label: String, amount: String, hasIcon: Boolean = false, isTotal: 
     ) {
         Text(
             text = label,
-            fontSize = if (isTotal) 20.sp else 18.sp,
+            fontSize = if (isTotal) 20.sp else 16.sp,
             fontWeight = if (isTotal) FontWeight.Bold else FontWeight.Medium
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (hasIcon) {
-                Text("₹ ", fontSize = 20.sp) // Rupee symbol
-            }
+            if (hasIcon) Text("Rs ", fontSize = 16.sp)
             Text(
                 text = amount,
-                fontSize = if (isTotal) 20.sp else 18.sp,
+                fontSize = if (isTotal) 20.sp else 16.sp,
                 fontWeight = if (isTotal) FontWeight.Bold else FontWeight.Medium
             )
         }
     }
 }
-
-
-@Preview
-@Composable
-fun Previewpayment() {
-    paymentactivity()
-}
-
-
-

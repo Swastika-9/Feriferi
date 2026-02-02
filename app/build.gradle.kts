@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.google.gms.google.services)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -52,26 +52,42 @@ android {
 }
 
 dependencies {
+    // --- PLATFORMS ---
     implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
+    implementation(platform(libs.androidx.compose.bom))
+
+    // --- ANDROID CORE ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
+
+    // --- COMPOSE UI ---
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+
+    // --- FIX 1: Material Icons Extended (Using direct string) ---
+    // The version is handled automatically by the Compose BoM above
+    implementation("androidx.compose.material:material-icons-extended")
+
+    // --- FIREBASE & AUTH ---
     implementation(libs.firebase.auth)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
     implementation(libs.firebase.database)
-    implementation(libs.firebase.firestore)
+
+    implementation("com.google.firebase:firebase-firestore")
+
+    implementation("com.google.firebase:firebase-storage")
+
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("com.cloudinary:cloudinary-android:2.1.0")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
-    implementation("com.google.firebase:firebase-storage")
+    implementation("androidx.compose.runtime:runtime-livedata")
+    implementation("io.coil-kt:coil-gif:2.4.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -80,6 +96,4 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    implementation("androidx.compose.runtime:runtime-livedata")
-    implementation(libs.androidx.compose.material.icons.extended)
 }

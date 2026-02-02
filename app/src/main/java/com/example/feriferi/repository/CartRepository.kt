@@ -8,34 +8,28 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-class AddToCartRepoImpl : AddToCartRepository {
-
+object CartRepository {
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseDatabase.getInstance()
 
-    // 1. ADD TO CART
-    override fun addToCart(product: Item, onResult: (Boolean) -> Unit) {
-        val userId = auth.currentUser?.uid
-        if (userId == null) {
-            onResult(false)
-            return
-        }
-
+    // 1. ADD TO CART (Updated to save Brand & Status)
+    fun addToCart(product: Item, onResult: (Boolean) -> Unit) {
+        val userId = auth.currentUser?.uid ?: return
         val cartRef = db.reference.child("Users").child(userId).child("Cart")
         val cartId = cartRef.push().key ?: return
 
-        // CLEANER: Use the helper function you created in Item.kt
-        val img = product.getDisplayImage()
+        // Handle image safely
+        val img = if (product.imageUrls.isNotEmpty()) product.imageUrls[0] else product.imageUrl
 
         val item = AddToCartModel(
             id = cartId,
             productId = product.id,
             name = product.name,
-            brand = product.brand.ifEmpty { "Unknown" }, // Safety check
+            brand = product.brand.ifEmpty { "Unknown" }, // Safety check for empty brand
 
-            // --- FIX IS HERE ---
+            // --- FIX IS HERE: Convert Int to Double ---
             price = product.price.toDouble(),
-            // -------------------
+            // ------------------------------------------
 
             imageUrl = img,
             quantity = 1,
@@ -48,8 +42,8 @@ class AddToCartRepoImpl : AddToCartRepository {
             .addOnFailureListener { onResult(false) }
     }
 
-    // 2. LISTEN TO CART ITEMS
-    override fun getCartItems(onUpdate: (List<AddToCartModel>) -> Unit) {
+    // 2. LISTEN TO ITEMS (Realtime)
+    fun getCartItems(onUpdate: (List<AddToCartModel>) -> Unit) {
         val userId = auth.currentUser?.uid ?: return
         val cartRef = db.reference.child("Users").child(userId).child("Cart")
 
@@ -69,21 +63,17 @@ class AddToCartRepoImpl : AddToCartRepository {
     }
 
     // 3. UPDATE QUANTITY
-    override fun updateQuantity(cartId: String, newQty: Int) {
+    fun updateQuantity(cartId: String, newQty: Int) {
         val userId = auth.currentUser?.uid ?: return
         if (newQty < 1) {
-            removeFromCart(cartId)
+            db.reference.child("Users").child(userId).child("Cart").child(cartId).removeValue()
         } else {
             db.reference.child("Users").child(userId).child("Cart").child(cartId).child("quantity").setValue(newQty)
         }
     }
 
-    override fun removeFromCart(cartId: String) {
-        val userId = auth.currentUser?.uid ?: return
-        db.reference.child("Users").child(userId).child("Cart").child(cartId).removeValue()
-    }
-
-    override fun clearCart() {
+    // 4. CLEAR CART
+    fun clearCart() {
         val userId = auth.currentUser?.uid ?: return
         db.reference.child("Users").child(userId).child("Cart").removeValue()
     }

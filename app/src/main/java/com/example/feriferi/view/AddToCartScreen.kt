@@ -1,5 +1,7 @@
 package com.example.feriferi.view
 
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,10 +15,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.feriferi.R
 import com.example.feriferi.model.AddToCartModel
@@ -25,10 +29,11 @@ import com.example.feriferi.viewmodel.AddToCartViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddToCartScreen(
-    viewModel: AddToCartViewModel,
+    viewModel: AddToCartViewModel = viewModel(),
     onBackClick: () -> Unit,
     onNavigateToDetails: (String) -> Unit
 ) {
+    val context = LocalContext.current
     val cartItems by viewModel.cartItems.collectAsState()
     val pheriBrown = Color(0xFF8D736B)
     val lightGray = Color(0xFFD9D9D9)
@@ -59,7 +64,7 @@ fun AddToCartScreen(
                 modifier = Modifier.padding(24.dp).align(Alignment.CenterHorizontally)
             )
 
-            // Gray Item Count Bar
+            // Item Count Bar
             Surface(color = lightGray, modifier = Modifier.fillMaxWidth().height(40.dp)) {
                 Box(contentAlignment = Alignment.Center) {
                     Text("${cartItems.size} Items in your cart", fontWeight = FontWeight.Medium)
@@ -80,11 +85,12 @@ fun AddToCartScreen(
                             item = item,
                             onIncrease = { viewModel.increaseQuantity(item) },
                             onDecrease = { viewModel.decreaseQuantity(item) },
-                            onItemClick = { onNavigateToDetails(item.id) }
+                            onItemClick = { onNavigateToDetails(item.productId) }
                         )
                     }
                 }
 
+                // Summary Card
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F3F0)),
                     shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
@@ -95,8 +101,18 @@ fun AddToCartScreen(
                         HorizontalDivider(Modifier.padding(vertical = 12.dp), thickness = 1.dp, color = Color.LightGray)
                         SummaryRow("Total", "RS ${viewModel.getTotal().toInt()}", isBold = true)
 
+                        // --- FIX IS HERE ---
                         Button(
-                            onClick = { },
+                            onClick = {
+                                if (cartItems.isNotEmpty()) {
+                                    // DO NOT call viewModel.checkout() here.
+                                    // Just navigate to the CheckoutActivity
+                                    val intent = Intent(context, CheckoutActivity::class.java)
+                                    context.startActivity(intent)
+                                } else {
+                                    Toast.makeText(context, "Cart is empty", Toast.LENGTH_SHORT).show()
+                                }
+                            },
                             colors = ButtonDefaults.buttonColors(containerColor = pheriBrown),
                             modifier = Modifier.fillMaxWidth().padding(top = 20.dp).height(54.dp),
                             shape = RoundedCornerShape(12.dp)
@@ -124,9 +140,9 @@ fun CartItemRow(
             .clickable { onItemClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
-
+        // Image logic handling both URL and Resource if needed
         Image(
-            painter = if (item.imageUrl.isNullOrEmpty()) painterResource(R.drawable.cottonshirt)
+            painter = if (item.imageUrl.isNullOrEmpty()) painterResource(R.drawable.placeholder_image) // Make sure this drawable exists
             else rememberAsyncImagePainter(item.imageUrl),
             contentDescription = null,
             modifier = Modifier
@@ -138,13 +154,6 @@ fun CartItemRow(
         Column(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
             Text(item.name, fontWeight = FontWeight.Bold, fontSize = 17.sp)
             Text(item.brand, color = Color.Gray, fontSize = 14.sp)
-
-            // Highlight "Offer Accepted" status
-            if (item.status == "Accepted") {
-                Text("Offer Accepted", color = Color(0xFF4CAF50), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-            } else {
-                Text("Waiting for Seller", color = Color(0xFFFFA000), fontSize = 12.sp)
-            }
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {

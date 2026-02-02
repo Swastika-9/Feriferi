@@ -1,7 +1,7 @@
 package com.example.feriferi.model
 
 data class ProductModel(
-    val id: String = "",
+    var id: String = "", // <--- CHANGE THIS FROM 'val' TO 'var'
     val sellerId: String = "",
     val name: String = "",
     val price: Double = 0.0,

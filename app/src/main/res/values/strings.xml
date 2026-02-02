@@ -11,4 +11,6 @@
     <string name="title_activity_chat_fairy_screen">ChatFairyScreen</string>
     <string name="title_activity_edit_seller_profile_screen">EditSellerProfileScreen</string>
     <string name="title_activity_edit_product_screen">EditProductScreen</string>
+    <string name="title_activity_chat">ChatActivity</string>
+    <string name="title_activity_check_out">CheckOutActivity</string>
 </resources>
